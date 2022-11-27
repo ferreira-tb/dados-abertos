@@ -41,36 +41,45 @@ interface NavegacaoEntrePaginas<L> {
     readonly href: L
 }
 
-interface EndpointOpcoes {
+interface EndpointOpcoes<O> {
     /** Data de início de um intervalo de tempo, no formato `AAAA-MM-DD`. */
     dataInicio?: string
     /** Data de término de um intervalo de tempo, no formato `AAAA-MM-DD`. */
     dataFim?: string
+    /** Número das legislaturas às quais os dados buscados devem corresponder. */
+    idLegislatura?: number[]
     /** O sentido da ordenação: `asc` para A a Z ou 0 a 9, e `desc` para Z a A ou 9 a 0. */
     ordem?: 'asc' | 'desc'
     /** Nome do campo pelo qual a lista deve ser ordenada: `id`, `sigla`, `nome`, `dataInicio` ou `dataFim`. */
-    ordenarPor?: 'id'| 'sigla' | 'nome' | 'dataInicio' | 'dataFim'
+    ordenarPor?: O
 }
+
+/** ID e nome. */
+type OrdenarIDNome = 'id' | 'nome';
+/** ID, nome e sigla da unidade federativa. */
+type OrdenarIDNomeSUF = 'id' | 'nome' | 'siglaUf';
+/** ID, nome, sigla, data inicial e data final. */
+type OrdenarIDNomeSiglaData = OrdenarIDNome | 'sigla' | 'dataInicio' | 'dataFim';
 
 ////// LINKS
 type CamaraEndpoints =
     | DeputadoEndpointURL
     | PartidoEndpointURL
 
-type DeputadoEndpointURL = `https://dadosabertos.camara.leg.br/api/${VersaoAPI}/deputados${string}`;
-type PartidoEndpointURL = `https://dadosabertos.camara.leg.br/api/${VersaoAPI}/partidos${string}`;
+type EndpointURL = `https://dadosabertos.camara.leg.br/api/${VersaoAPI}`;
+type DeputadoEndpointURL = `${EndpointURL}/deputados${string}`;
+type PartidoEndpointURL = `${EndpointURL}/partidos${string}`;
 
 ////// PARTIDOS
 type DadosDosPartidos =
     | DadosBasicosPartido
     | Partido
     | LideresDoPartido
+    | MembrosDoPartido
 
-interface PartidoEndpointOpcoes extends EndpointOpcoes {
+interface PartidoEndpointOpcoes extends EndpointOpcoes<OrdenarIDNomeSiglaData> {
     /** Sigla de um ou mais partidos. */
     sigla?: string[]
-    /** Número das legislaturas às quais os dados buscados devem corresponder. */
-    idLegislatura?: number[]
 }
 
 interface DadosBasicosPartido {
@@ -120,10 +129,22 @@ interface LideresDoPartido {
     readonly siglaPartido: string
     readonly uriPartido: string
     readonly siglaUf: UnidadeFederativa
-    readonly email: string
+    readonly email: string | null
     readonly urlFoto: string
     readonly titulo: 'Líder' | '1º Vice-Líder' | 'Vice-Líder'
     readonly codTitulo: number
     readonly dataInicio: string
     readonly dataFim: string | null
+}
+
+interface MembrosDoPartido {
+    readonly id: number
+    readonly uri: string
+    readonly nome: string
+    readonly siglaPartido: string
+    readonly uriPartido: string
+    readonly siglaUf: UnidadeFederativa
+    readonly idLegislatura: number
+    readonly urlFoto: string
+    readonly email: string | null
 }
