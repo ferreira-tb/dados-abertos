@@ -41,6 +41,39 @@ interface NavegacaoEntrePaginas<L> {
     readonly href: L
 }
 
+///////////////////////////////////////
+///////////////////////////////////////
+///////////////////////////////////////
+
+interface FaseEvento {
+    readonly dataHoraFim: string
+    readonly dataHoraInicio: string
+    readonly titulo: string
+}
+
+interface LocalCamara {
+    readonly andar: string
+    readonly nome: string
+    readonly predio: string
+    readonly sala: string
+}
+
+interface Orgao {
+    readonly apelido: string
+    readonly codTipoOrgao: number
+    readonly id: number
+    readonly nome: string
+    readonly nomePublicacao: string
+    readonly nomeResumido: string
+    readonly sigla: string
+    readonly tipoOrgao: string
+    readonly uri: string
+}
+
+///////////////////////////////////////
+///////////////////////////////////////
+///////////////////////////////////////
+
 /** 
  * Array contendo as chaves cujo valor devem ser strings.
  * É usada nas funções que constroem as URLs.
@@ -167,9 +200,9 @@ interface DeputadoEndpointOpcoes extends EndpointOpcoes<OrdenarDeputados> {
     siglaPartido?: string[]
     /**
      * Letra que designe o sexo dos parlamentares que se deseja buscar,
-     * sendo M para masculino e F para feminino.
+     * sendo F para feminino e M para masculino.
      */
-    siglaSexo?: 'M' | 'F'
+    siglaSexo?: 'F' | 'M'
     /**
      * Uma ou mais siglas de unidades federativas (estados e Distrito Federal).
      * Se ausente, serão retornados deputados de todos os estados.
@@ -189,6 +222,13 @@ interface DadosBasicosDeputado {
     readonly email: string | null
 }
 
+/** 
+ * Informações detalhadas sobre um deputado específico.
+ * 
+ * Essa interface é apenas um rascunho, pois não foi possível obter dados da API da câmara.
+ * É preciso verificar item por item após os dados estarem disponíveis,
+ * pois é muito provável que alguns tipos estejam incorretos.
+ */
 interface Deputado {
     readonly cpf: string
     readonly dataFalecimento: string
@@ -198,6 +238,120 @@ interface Deputado {
     readonly municipioNascimento: string
     readonly nomeCivil: string
     readonly redeSocial: ReadonlyArray<string>
+    readonly sexo: 'F' | 'M'
+    readonly ufNascimento: UnidadeFederativa
+    readonly ultimoStatus: StatusDoDeputado
+    readonly uri: DeputadosEndpointURL
+    readonly urlWebsite: string
+}
+
+interface StatusDoDeputado extends DadosBasicosDeputado {
+    readonly condicaoEleitoral: string
+    readonly data: string
+    readonly descricaoStatus: string
+    readonly gabinete: GabineteDoDeputado
+    readonly nomeEleitoral: string
+    readonly situacao: string
+}
+
+interface GabineteDoDeputado {
+    readonly andar: string
+    readonly email: string
+    readonly nome: string
+    readonly predio: string
+    readonly sala: string
+    readonly telefone: string
+}
+
+/** As despesas com exercício parlamentar do deputado. */
+interface DespesasDoDeputado {
+    readonly ano: number
+    readonly cnpjCpfFornecedor: string
+    readonly codDocumento: number
+    readonly codLote: number
+    readonly codTipoDocumento: number
+    readonly dataDocumento: string
+    readonly mes: number
+    readonly nomeFornecedor: string
+    readonly numDocumento: string
+    readonly numRessarcimento: string
+    readonly parcela: number
+    readonly tipoDespesa: string
+    readonly tipoDocumento: string
+    readonly urlDocumento: string
+    readonly valorDocumento: number
+    readonly valorGlosa: number
+    readonly valorLiquido: number
+}
+
+/** Discursos feitos por um deputado em eventos diversos. */
+interface DiscursosDoDeputado {
+    readonly dataHoraFim: string
+    readonly dataHoraInicio: string
+    readonly faseEvento: FaseEvento
+    readonly keywords: string
+    readonly sumario: string
+    readonly tipoDiscurso: string
+    readonly transcricao: string
+    readonly uriEvento: string
+    readonly urlAudio: string
+    readonly urlTexto: string
+    readonly urlVideo: string
+}
+
+/** Uma lista de eventos com a participação do parlamentar. */
+interface EventosDoDeputado {
+    readonly dataHoraFim: string
+    readonly dataHoraInicio: string
+    readonly descricao: string
+    readonly descricaoTipo: string
+    readonly id: number
+    readonly localCamara: LocalCamara
+    readonly localExterno: string
+    readonly orgaos: Orgao[]
+    readonly situacao: string
+    readonly uri: string
+    readonly urlRegistro: string
+}
+
+/** As frentes parlamentares das quais um deputado é integrante. */
+interface FrentesDoDeputado {
+    readonly id: number
+    readonly idLegislatura: number
+    readonly titulo: string
+    readonly uri: string
+}
+
+/** Os empregos e atividades que o deputado já teve. */
+interface OcupacoesDoDeputado {
+    readonly anoFim: number
+    readonly anoInicio: number
+    readonly entidade: string
+    readonly entidadePais: string
+    readonly entidadeUF: string
+    readonly titulo: string
+}
+
+/** Os órgãos dos quais um deputado é integrante. */
+interface OrgaosDoDeputado {
+    readonly codTitulo: string
+    readonly dataFim: string
+    readonly dataInicio: string
+    readonly idOrgao: number
+    readonly nomeOrgao: string
+    readonly nomePublicacao: string
+    readonly siglaOrgao: string
+    readonly titulo: string
+    readonly uriOrgao: string
+}
+
+/** As profissões que o parlamentar declarou à Câmara que já exerceu ou
+ * que pode exercer pela sua formação e/ou experiência. */
+interface ProfissoesDoDeputado {
+    readonly id: number
+    readonly idLegislatura: number
+    readonly titulo: string
+    readonly uri: string
 }
 
 ////// PARTIDOS
@@ -231,24 +385,24 @@ interface Partido extends DadosBasicosPartido {
 }
 
 interface StatusDoPartido {
-    data: string
-    idLegislatura: string
-    situacao: 'Ativo' | 'Inativo'
-    totalPosse: string
-    totalMembros: string
-    uriMembros: DeputadosEndpointURL
-    lider: LiderDoPartido
+    readonly data: string
+    readonly idLegislatura: string
+    readonly situacao: 'Ativo' | 'Inativo'
+    readonly totalPosse: string
+    readonly totalMembros: string
+    readonly uriMembros: DeputadosEndpointURL
+    readonly lider: LiderDoPartido
 }
 
 /** Dados básicos sobre o líder do partido. */
 interface LiderDoPartido {
-    uri: DeputadosEndpointURL
-    nome: string
-    siglaPartido: string
-    uriPartido: PartidosEndpointURL
-    uf: UnidadeFederativa
-    idLegislatura: number
-    urlFoto: string
+    readonly uri: DeputadosEndpointURL
+    readonly nome: string
+    readonly siglaPartido: string
+    readonly uriPartido: PartidosEndpointURL
+    readonly uf: UnidadeFederativa
+    readonly idLegislatura: number
+    readonly urlFoto: string
 }
 
 interface MembrosDoPartido extends DadosBasicosDeputado { }
