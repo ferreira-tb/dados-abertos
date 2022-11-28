@@ -1,14 +1,14 @@
 {
-  "name": "dados-abertos-api",
-  "version": "0.1.0",
-  "type": "module",
-  "main": "dist/main.js",
-  "scripts": {
-    "start": "tsc && npm run main",
-    "main": "node dist/main.js"
-  },
-  "author": "ferreira-tb",
-  "devDependencies": {
-    "@types/node": "^18.11.9"
-  }
+    "name": "dados-abertos-api",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "dist/main.js",
+    "scripts": {
+        "start": "tsc && npm run main",
+        "main": "node dist/main.js"
+    },
+    "author": "ferreira-tb",
+    "devDependencies": {
+        "@types/node": "^18.11.9"
+    }
 }

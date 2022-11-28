@@ -3,7 +3,7 @@ import { verificarData, verificarID } from "../common/helpers.js";
 
 export default class Partidos {
     /** URL para o endpoint dos partidos. */
-    readonly endpoint: PartidoEndpointURL = 'https://dadosabertos.camara.leg.br/api/v2/partidos';
+    readonly endpoint: PartidosEndpointURL = 'https://dadosabertos.camara.leg.br/api/v2/partidos';
 
     /** 
      * Retorna uma lista de dados básicos sobre os partidos políticos que têm ou já tiveram deputados na Câmara.
@@ -20,7 +20,7 @@ export default class Partidos {
         const dadosDosPartidos = await fetch(url);
         if (dadosDosPartidos.status === 400 || dadosDosPartidos.status === 404) return [];
 
-        const json = await dadosDosPartidos.json() as CamaraEndpoint<DadosBasicosPartido[], PartidoEndpointURL>;
+        const json = await dadosDosPartidos.json() as ResultadoBusca<DadosBasicosPartido[], PartidosEndpointURL>;
         if (Array.isArray(json.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosPartido>(json.links);
             if (dadosExtras.length > 0) json.dados.push(...dadosExtras);
@@ -41,7 +41,7 @@ export default class Partidos {
         const dadosDoPartido = await fetch(url);
         if (dadosDoPartido.status === 400 || dadosDoPartido.status === 404) return null;
 
-        const json = await dadosDoPartido.json() as CamaraEndpoint<Partido, PartidoEndpointURL>;
+        const json = await dadosDoPartido.json() as ResultadoBusca<Partido, PartidosEndpointURL>;
         return json.dados;
     };
 
@@ -53,7 +53,7 @@ export default class Partidos {
         const lideresDoPartido = await fetch(url);
         if (lideresDoPartido.status === 400 || lideresDoPartido.status === 404) return [];
 
-        const json = await lideresDoPartido.json() as CamaraEndpoint<LideresDoPartido[], PartidoEndpointURL>;
+        const json = await lideresDoPartido.json() as ResultadoBusca<LideresDoPartido[], PartidosEndpointURL>;
         if (Array.isArray(json.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<LideresDoPartido>(json.links);
             if (dadosExtras.length > 0) json.dados.push(...dadosExtras);
@@ -71,12 +71,12 @@ export default class Partidos {
     async obterMembros(idDoPartido: number, opcoes?: EndpointOpcoes<OrdenarIDNomeSUF>): Promise<MembrosDoPartido[]> {
         idDoPartido = verificarID(idDoPartido);
 
-        const urlBase: PartidoEndpointURL = `${this.endpoint}/${idDoPartido.toString(10)}/membros?itens=100`;
+        const urlBase: PartidosEndpointURL = `${this.endpoint}/${idDoPartido.toString(10)}/membros?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
         const membrosDoPartido = await fetch(url);
         if (membrosDoPartido.status === 400 || membrosDoPartido.status === 404) return [];
 
-        const json = await membrosDoPartido.json() as CamaraEndpoint<MembrosDoPartido[], PartidoEndpointURL>;
+        const json = await membrosDoPartido.json() as ResultadoBusca<MembrosDoPartido[], PartidosEndpointURL>;
         if (Array.isArray(json.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<MembrosDoPartido>(json.links);
             if (dadosExtras.length > 0) json.dados.push(...dadosExtras);
@@ -87,56 +87,53 @@ export default class Partidos {
     };
 
     /** Constrói a URL com base nos parâmetros fornecidos. */
-    #construirURL<T extends EndpointOpcoes<string>>(urlBase: PartidoEndpointURL, opcoes?: T): PartidoEndpointURL {
+    #construirURL<T extends EndpointOpcoes<string>>(urlBase: PartidosEndpointURL, opcoes?: T): PartidosEndpointURL {
         if (!opcoes) return urlBase;
 
         let url = urlBase;
-        for (const [chave, valor] of Object.entries(opcoes)) {
-            if (chave === 'sigla') {
-                if (!Array.isArray(valor)) {
-                    throw new APIError(`${chave} deveria ser uma array, mas é um(a) ${typeof valor}`);
+        for (const [key, value] of Object.entries(opcoes) as [keyof PartidoEndpointOpcoes, unknown][]) {
+            if (key === 'sigla') {
+                if (!Array.isArray(value)) {
+                    throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
                 };
 
-                for (const sigla of valor) {
+                for (const sigla of value) {
                     if (typeof sigla === 'string') {
-                        url += `&${chave}=${sigla}`;
+                        url += `&${key}=${sigla}`;
                     };
                 };
 
-            } else if ((chave === 'dataInicio' || chave === 'dataFim') && verificarData(valor)) {
-                url += `&${chave}=${valor}`;
+            } else if ((key === 'dataInicio' || key === 'dataFim') && verificarData(value)) {
+                url += `&${key}=${value}`;
 
-            } else if (chave === 'idLegislatura') {
-                if (typeof valor !== 'number' || !Number.isInteger(valor)) {
-                    throw new APIError(`${valor} não é um ID de legislatura válido.`);
+            } else if (key === 'idLegislatura') {
+                if (typeof value !== 'number' || !Number.isInteger(value)) {
+                    throw new APIError(`${value} não é um ID de legislatura válido.`);
                 };
-                url += `&${chave}=${Math.abs(valor).toString(10)}`;
+                url += `&${key}=${Math.abs(value).toString(10)}`;
 
-            } else if (chave === 'ordem' || chave === 'ordenarPor') {
-                if (typeof valor !== 'string') {
-                    throw new APIError(`${chave} deveria ser uma string, mas é um(a) ${typeof valor}`);
+            } else if (key === 'ordem' || key === 'ordenarPor') {
+                if (typeof value !== 'string') {
+                    throw new APIError(`${key} deveria ser uma string, mas é um(a) ${typeof value}`);
                 };
-                url += `&${chave}=${valor}`;
+                url += `&${key}=${value}`;
 
             } else {
-                throw new APIError(`${chave} não é uma opção válida.`);
+                throw new APIError(`${key} não é uma opção válida.`);
             };
         };
 
         return url;
     };
 
-    /**
-     * Obtém os dados da próxima página.
-     * @param links Links para navegação entre as páginas.
-     */
-    async #obterDadosProximaPagina<T extends DadosDosPartidos>(links: NavegacaoEntrePaginas<CamaraEndpoints>[]) {
+    /** Obtém os dados da próxima página. */
+    async #obterDadosProximaPagina<T extends DadosDosPartidos>(links: NavegacaoEntrePaginas<PartidosEndpointURL>[]): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {
                 if (!link.href) throw new APIError('O link para a próxima página é inválido');
                 const proximaPagina = await fetch(link.href);
-                const proximoJson = await proximaPagina.json() as CamaraEndpoint<T[], CamaraEndpoints>;
+                const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], PartidosEndpointURL>;
                 dados.push(...proximoJson.dados);
 
                 if (Array.isArray(proximoJson.links)) {

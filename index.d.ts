@@ -1,5 +1,4 @@
 ////// GLOBAL
-type VersaoAPI = 'v2';
 type UnidadeFederativa =
     | 'AC' // Acre
     | 'AL' // Alagoas
@@ -29,7 +28,7 @@ type UnidadeFederativa =
     | 'SE' // Sergipe
     | 'TO' // Tocantins
 
-interface CamaraEndpoint<D, L> {
+interface ResultadoBusca<D, L> {
     dados: D
     links: NavegacaoEntrePaginas<L>[]
 }
@@ -56,19 +55,73 @@ interface EndpointOpcoes<O> {
 
 /** ID e nome. */
 type OrdenarIDNome = 'id' | 'nome';
+/** Data inicial e data final. */
+type OrdenarData = 'dataInicio' | 'dataFim';
+/** ID, nome e legislatura. */
+type OrdenarIDNomeLeg = OrdenarIDNome | 'idLegislatura';
 /** ID, nome e sigla da unidade federativa. */
 type OrdenarIDNomeSUF = 'id' | 'nome' | 'siglaUf';
 /** ID, nome, sigla, data inicial e data final. */
-type OrdenarIDNomeSiglaData = OrdenarIDNome | 'sigla' | 'dataInicio' | 'dataFim';
+type OrdenarIDNomeSiglaData = OrdenarIDNome | OrdenarData | 'sigla';
 
-////// LINKS
+////// ENDPOINTS
 type CamaraEndpoints =
-    | DeputadoEndpointURL
-    | PartidoEndpointURL
+    | BlocosEndpointURL
+    | DeputadosEndpointURL
+    | EventosEndpointURL
+    | FrentesEndpointURL
+    | LegislaturasEndpointURL
+    | OrgaosEndpointURL
+    | PartidosEndpointURL
+    | ProposicoesEndpointURL
+    | ReferenciasEndpointURL
+    | VotacoesEndpointURL
 
-type EndpointURL = `https://dadosabertos.camara.leg.br/api/${VersaoAPI}`;
-type DeputadoEndpointURL = `${EndpointURL}/deputados${string}`;
-type PartidoEndpointURL = `${EndpointURL}/partidos${string}`;
+type Endpoints =
+    | 'blocos'
+    | 'deputados'
+    | 'eventos'
+    | 'frentes'
+    | 'legislaturas'
+    | 'orgaos'
+    | 'partidos'
+    | 'proposicoes'
+    | 'referencias'
+    | 'votacoes'
+
+type VersaoAPI = 'v2';
+type EndpointURLBase = `https://dadosabertos.camara.leg.br/api/${VersaoAPI}`;
+type TodosEndpointsURL = `${EndpointURLBase}/${Endpoints}`;
+
+type BlocosEndpointURL = `${EndpointURLBase}/blocos${string}`;
+type DeputadosEndpointURL = `${EndpointURLBase}/deputados${string}`;
+type EventosEndpointURL = `${EndpointURLBase}/eventos${string}`;
+type FrentesEndpointURL = `${EndpointURLBase}/frentes${string}`;
+type LegislaturasEndpointURL = `${EndpointURLBase}/legislaturas${string}`;
+type OrgaosEndpointURL = `${EndpointURLBase}/orgaos${string}`;
+type PartidosEndpointURL = `${EndpointURLBase}/partidos${string}`;
+type ProposicoesEndpointURL = `${EndpointURLBase}/proposicoes${string}`;
+type ReferenciasEndpointURL = `${EndpointURLBase}/referencias${string}`;
+type VotacoesEndpointURL = `${EndpointURLBase}/votacoes${string}`;
+
+////// BLOCOS
+type DadosDosBlocos =
+    | DadosBasicosBloco
+
+interface BlocoEndpointOpcoes extends Omit<EndpointOpcoes<OrdenarIDNomeLeg>, 'dataInicio' | 'dataFim'> {
+    /** ID de um ou mais blocos partidários. */
+    id?: number[]
+}
+
+interface DadosBasicosBloco {
+    /** ID do bloco partidário. */
+    readonly id: string
+    /** Siglas dos partidos associados. */
+    readonly nome: string
+    /** ID da legislatura. */
+    readonly idLegislatura: string
+    readonly uri: BlocosEndpointURL
+}
 
 ////// PARTIDOS
 type DadosDosPartidos =
@@ -89,7 +142,7 @@ interface DadosBasicosPartido {
     readonly sigla: string
     /** Nome completo do partido. */
     readonly nome: string
-    readonly uri: PartidoEndpointURL
+    readonly uri: PartidosEndpointURL
 }
 
 interface Partido extends DadosBasicosPartido {
@@ -106,45 +159,36 @@ interface StatusDoPartido {
     situacao: 'Ativo' | 'Inativo'
     totalPosse: string
     totalMembros: string
-    uriMembros: DeputadoEndpointURL
+    uriMembros: DeputadosEndpointURL
     lider: LiderDoPartido
 }
 
 /** Dados básicos sobre o líder do partido. */
 interface LiderDoPartido {
-    uri: DeputadoEndpointURL
+    uri: DeputadosEndpointURL
     nome: string
     siglaPartido: string
-    uriPartido: PartidoEndpointURL
+    uriPartido: PartidosEndpointURL
     uf: UnidadeFederativa
     idLegislatura: number
     urlFoto: string
 }
 
-interface LideresDoPartido {
+interface MembrosDoPartido {
     readonly id: number
-    readonly uri: string
-    readonly idLegislatura: number
+    readonly uri: DeputadosEndpointURL
     readonly nome: string
     readonly siglaPartido: string
-    readonly uriPartido: string
+    readonly uriPartido: PartidosEndpointURL
     readonly siglaUf: UnidadeFederativa
-    readonly email: string | null
+    readonly idLegislatura: number
     readonly urlFoto: string
+    readonly email: string | null
+}
+
+interface LideresDoPartido extends MembrosDoPartido {
     readonly titulo: 'Líder' | '1º Vice-Líder' | 'Vice-Líder'
     readonly codTitulo: number
     readonly dataInicio: string
     readonly dataFim: string | null
-}
-
-interface MembrosDoPartido {
-    readonly id: number
-    readonly uri: string
-    readonly nome: string
-    readonly siglaPartido: string
-    readonly uriPartido: string
-    readonly siglaUf: UnidadeFederativa
-    readonly idLegislatura: number
-    readonly urlFoto: string
-    readonly email: string | null
 }
