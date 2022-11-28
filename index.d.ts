@@ -374,23 +374,25 @@ interface FaseEvento {
 ////// FRENTES
 interface DadosBasicosFrente {
     readonly id: number
-    readonly idLegislatura: number
-    readonly titulo: string
     readonly uri: FrentesEndpointURL
+    readonly titulo: string
+    readonly idLegislatura: number
 }
 
 interface Frente extends DadosBasicosFrente {
     readonly telefone: string
-    readonly email: string
+    readonly email: string | null
     readonly keywords: string | null
     readonly idSituacao: null
     readonly situacao: string
     readonly urlWebsite: string | null
-    readonly urlDocumento: string
+    readonly urlDocumento: string | null
     readonly coordenador: CoordenadorDaFrente
 }
 
-interface CoordenadorDaFrente extends DadosBasicosDeputado { }
+type CoordenadorDaFrente = {
+    [key in keyof DadosBasicosDeputado]: DadosBasicosDeputado[key] | null;
+}
 
 /** Representa um deputado que faz parte de uma frente parlamentar. */
 interface MembroDaFrente {
