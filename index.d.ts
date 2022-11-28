@@ -41,38 +41,11 @@ interface NavegacaoEntrePaginas<L> {
     readonly href: L
 }
 
-///////////////////////////////////////
-///////////////////////////////////////
-///////////////////////////////////////
-
-interface FaseEvento {
-    readonly dataHoraFim: string
-    readonly dataHoraInicio: string
-    readonly titulo: string
-}
-
-interface LocalCamara {
-    readonly andar: string
+interface Bancada {
+    readonly tipo: string
     readonly nome: string
-    readonly predio: string
-    readonly sala: string
+    readonly uri: PartidosEndpointURL | null
 }
-
-interface Orgao {
-    readonly apelido: string
-    readonly codTipoOrgao: number
-    readonly id: number
-    readonly nome: string
-    readonly nomePublicacao: string
-    readonly nomeResumido: string
-    readonly sigla: string
-    readonly tipoOrgao: string
-    readonly uri: string
-}
-
-///////////////////////////////////////
-///////////////////////////////////////
-///////////////////////////////////////
 
 /** 
  * Array contendo as chaves cujo valor devem ser strings.
@@ -210,6 +183,8 @@ interface DeputadoEndpointOpcoes extends EndpointOpcoes<OrdenarDeputados> {
     siglaUf?: UnidadeFederativa[]
 }
 
+// Interfaces que dependem dessa:
+// CoordenadorDaFrente, DeputadosNoEvento, LideresDaLegislatura, MembrosDoPartido, StatusDoDeputado.
 interface DadosBasicosDeputado {
     readonly id: number
     readonly uri: DeputadosEndpointURL
@@ -286,7 +261,7 @@ interface DespesasDoDeputado {
 
 /** Discursos feitos por um deputado em eventos diversos. */
 interface DiscursosDoDeputado {
-    readonly dataHoraFim: string
+    readonly dataHoraFim: string | null
     readonly dataHoraInicio: string
     readonly faseEvento: FaseEvento
     readonly keywords: string
@@ -294,9 +269,9 @@ interface DiscursosDoDeputado {
     readonly tipoDiscurso: string
     readonly transcricao: string
     readonly uriEvento: string
-    readonly urlAudio: string
+    readonly urlAudio: string | null
     readonly urlTexto: string
-    readonly urlVideo: string
+    readonly urlVideo: string | null
 }
 
 /** Uma lista de eventos com a participação do parlamentar. */
@@ -307,20 +282,15 @@ interface EventosDoDeputado {
     readonly descricaoTipo: string
     readonly id: number
     readonly localCamara: LocalCamara
-    readonly localExterno: string
-    readonly orgaos: Orgao[]
+    readonly localExterno: string | null
+    readonly orgaos: ReadonlyArray<DadosBasicosOrgao>
     readonly situacao: string
     readonly uri: string
     readonly urlRegistro: string
 }
 
 /** As frentes parlamentares das quais um deputado é integrante. */
-interface FrentesDoDeputado {
-    readonly id: number
-    readonly idLegislatura: number
-    readonly titulo: string
-    readonly uri: string
-}
+interface FrentesDoDeputado extends DadosBasicosFrente { }
 
 /** Os empregos e atividades que o deputado já teve. */
 interface OcupacoesDoDeputado {
@@ -352,6 +322,139 @@ interface ProfissoesDoDeputado {
     readonly idLegislatura: number
     readonly titulo: string
     readonly uri: string
+}
+
+////// EVENTOS
+interface DadosBasicosEvento {
+    readonly id: number
+    readonly uri: EventosEndpointURL
+    readonly dataHoraInicio: string
+    readonly dataHoraFim: string | null
+    readonly situacao: string
+    readonly descricaoTipo: string
+    readonly descricao: string
+    readonly localExterno: string | null
+    readonly orgaos: ReadonlyArray<DadosBasicosOrgao>
+    readonly localCamara: LocalCamara
+    readonly urlRegistro: string | null
+}
+
+type Requerimento = {
+    titulo: string;
+    uri: ProposicoesEndpointURL
+}
+
+/** Representa eventos ocorridos ou previstos nos diversos órgãos da Câmara. */
+interface Evento extends DadosBasicosEvento {
+    readonly uriDeputados: null
+    readonly uriConvidados: null
+    readonly fases: null
+    readonly requerimentos: ReadonlyArray<Requerimento>
+    readonly urlDocumentoPauta: EventosEndpointURL
+}
+
+/** Deputados participantes de um evento específico. */
+type DeputadosNoEvento = ReadonlyArray<DadosBasicosDeputado>;
+/** Órgãos organizadores do evento. */
+type OrgaosDoEvento = ReadonlyArray<DadosBasicosOrgao>;
+
+interface LocalCamara {
+    readonly andar: string | null
+    readonly nome: string | null
+    readonly predio: string | null
+    readonly sala: string | null
+}
+
+interface FaseEvento {
+    readonly dataHoraFim: string | null
+    readonly dataHoraInicio: string | null
+    readonly titulo: string
+}
+
+////// FRENTES
+interface DadosBasicosFrente {
+    readonly id: number
+    readonly idLegislatura: number
+    readonly titulo: string
+    readonly uri: FrentesEndpointURL
+}
+
+interface Frente extends DadosBasicosFrente {
+    readonly telefone: string
+    readonly email: string
+    readonly keywords: string | null
+    readonly idSituacao: null
+    readonly situacao: string
+    readonly urlWebsite: string | null
+    readonly urlDocumento: string
+    readonly coordenador: CoordenadorDaFrente
+}
+
+interface CoordenadorDaFrente extends DadosBasicosDeputado { }
+
+/** Representa um deputado que faz parte de uma frente parlamentar. */
+interface MembroDaFrente {
+    readonly id: number
+    readonly uri: DeputadosEndpointURL
+    readonly nome: string
+    readonly siglaPartido: string
+    readonly uriPartido: PartidosEndpointURL
+    readonly siglaUf: UnidadeFederativa
+    readonly idLegislatura: number
+    readonly urlFoto: string
+    readonly email: string | null
+    readonly titulo: string
+    readonly codTitulo: number
+    readonly dataInicio: string | null
+    readonly dataFim: string | null
+}
+
+////// LEGISLATURAS
+interface DadosBasicosLegislatura {
+    readonly id: number
+    readonly uri: LegislaturasEndpointURL
+    readonly dataInicio: string
+    readonly dataFim: string
+}
+
+interface Legislatura extends DadosBasicosLegislatura { }
+
+/** Líderes, vice-líderes e representantes na legislatura. */
+interface LideresDaLegislatura {
+    readonly parlamentar: DadosBasicosDeputado
+    readonly titulo: string
+    readonly dataInicio: string
+    readonly dataFim: string
+}
+
+interface MesaDaLegislatura {
+    // ERRO 500
+}
+
+////// ORGÃOS
+// Interfaces que dependem dessa:
+// DadosBasicosEvento, EventosDoDeputado, OrgaosDoEvento.
+interface DadosBasicosOrgao {
+    readonly id: number
+    readonly uri: OrgaosEndpointURL
+    readonly sigla: string
+    readonly nome: string
+    readonly apelido: string
+    readonly codTipoOrgao: number
+    readonly tipoOrgao: string
+    readonly nomePublicacao: string
+    readonly nomeResumido: string | null 
+}
+
+/** Representa comissões e outros órgãos legislativos da Câmara. */
+interface Orgao extends DadosBasicosOrgao {
+    readonly dataInicio: string | null
+    readonly dataInstalacao: string | null
+    readonly dataFim: string | null
+    readonly dataFimOriginal: string | null
+    readonly casa: string
+    readonly sala: string | null
+    readonly urlWebsite: string | null
 }
 
 ////// PARTIDOS
