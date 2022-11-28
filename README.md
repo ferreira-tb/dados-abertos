@@ -1,1 +1,1 @@
-*ATENÇÃO*: O projeto está em fase inicial de desenvolvimento, com seu uso não sendo recomendado.
+*ATENÇÃO*: O projeto está em fase inicial de desenvolvimento. Seu uso não é recomendado.
