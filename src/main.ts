@@ -1,5 +1,5 @@
 import * as fs from 'node:fs/promises';
-import BlocosPartidarios from './endpoints/blocos.js';
+import Deputados from './endpoints/deputados.js';
 
-const blocos = new BlocosPartidarios();
-fs.writeFile('test.json', JSON.stringify(await blocos.obterUm(525)));
+const deputados = new Deputados();
+fs.writeFile('test.json', JSON.stringify(await deputados.obterUm(204515)));

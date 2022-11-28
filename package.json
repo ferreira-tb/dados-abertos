@@ -10,5 +10,8 @@
     "author": "ferreira-tb",
     "devDependencies": {
         "@types/node": "^18.11.9"
+    },
+    "engines": {
+        "node": ">=19.1.0"
     }
 }

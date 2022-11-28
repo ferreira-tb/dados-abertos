@@ -20,7 +20,9 @@ export default class BlocosPartidarios {
     async obterTodos(opcoes?: BlocoEndpointOpcoes): Promise<DadosBasicosBloco[]> {
         const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
         const dadosDosBlocos = await fetch(url);
-        if (dadosDosBlocos.status === 400 || dadosDosBlocos.status === 404) return [];
+
+        const status = APIError.handleStatus(dadosDosBlocos.status);
+        if (status === false) return [];
 
         const json = await dadosDosBlocos.json() as ResultadoBusca<DadosBasicosBloco[], BlocosEndpointURL>;
         if (Array.isArray(json.dados)) {
@@ -43,32 +45,33 @@ export default class BlocosPartidarios {
 
         const url = `${this.endpoint}/${idDoBloco.toString(10)}`;
         const dadosDoBloco = await fetch(url);
-        if (dadosDoBloco.status === 400 || dadosDoBloco.status === 404) return null;
+
+        const status = APIError.handleStatus(dadosDoBloco.status);
+        if (status === false) return null;
 
         const json = await dadosDoBloco.json() as ResultadoBusca<DadosBasicosBloco, BlocosEndpointURL>;
         return json.dados;
     };
 
     /** Constrói a URL com base nos parâmetros fornecidos. */
-    #construirURL(urlBase: BlocosEndpointURL, opcoes?: BlocoEndpointOpcoes): BlocosEndpointURL {
-        if (!opcoes) return urlBase;
+    #construirURL(url: BlocosEndpointURL, opcoes?: BlocoEndpointOpcoes): BlocosEndpointURL {
+        if (!opcoes) return url;
 
-        let url = urlBase;
-        for (const [key, value] of Object.entries(opcoes) as [keyof BlocoEndpointOpcoes, unknown][]) {
+        type Opcoes = keyof BlocoEndpointOpcoes;
+        /** Chaves cujo valor devem ser strings. */
+        const stringKeys: StringKeys<Opcoes> = ['ordem', 'ordenarPor'];
+        
+        for (const [key, value] of Object.entries(opcoes) as [Opcoes, unknown][]) {
             if (key === 'id' || key === 'idLegislatura' ) {
-                if (!Array.isArray(value)) {
-                    throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
-                };
+                if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
-                for (const item of value) {
-                    const id = verificarID(item);
+                for (const numero of value) {
+                    const id = verificarID(numero);
                     url += `&${key}=${id.toString(10)}`;
                 };
 
-            } else if (key === 'ordem' || key === 'ordenarPor') {
-                if (typeof value !== 'string') {
-                    throw new APIError(`${key} deveria ser uma string, mas é um(a) ${typeof value}`);
-                };
+            } else if (stringKeys.includes(key)) {
+                if (typeof value !== 'string') throw new APIError(`${key} deveria ser uma string, mas é um(a) ${typeof value}`);
                 url += `&${key}=${value}`;
             
             } else {
@@ -80,12 +83,16 @@ export default class BlocosPartidarios {
     };
 
     /** Obtém os dados da próxima página. */
-     async #obterDadosProximaPagina<T extends DadosDosBlocos>(links: NavegacaoEntrePaginas<BlocosEndpointURL>[]): Promise<T[]> {
+     async #obterDadosProximaPagina<T extends DadosDosBlocos>(links: LinksNavegacao<BlocosEndpointURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {
                 if (!link.href) throw new APIError('O link para a próxima página é inválido');
                 const proximaPagina = await fetch(link.href);
+
+                const status = APIError.handleStatus(proximaPagina.status);
+                if (status === false) return [];
+
                 const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], BlocosEndpointURL>;
                 dados.push(...proximoJson.dados);
 

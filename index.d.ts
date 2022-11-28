@@ -28,9 +28,10 @@ type UnidadeFederativa =
     | 'SE' // Sergipe
     | 'TO' // Tocantins
 
+type LinksNavegacao<L> = ReadonlyArray<NavegacaoEntrePaginas<L>>
 interface ResultadoBusca<D, L> {
     dados: D
-    links: NavegacaoEntrePaginas<L>[]
+    links: LinksNavegacao<L>
 }
 
 interface NavegacaoEntrePaginas<L> {
@@ -40,29 +41,41 @@ interface NavegacaoEntrePaginas<L> {
     readonly href: L
 }
 
-interface EndpointOpcoes<O> {
-    /** Data de início de um intervalo de tempo, no formato `AAAA-MM-DD`. */
-    dataInicio?: string
-    /** Data de término de um intervalo de tempo, no formato `AAAA-MM-DD`. */
-    dataFim?: string
-    /** Número das legislaturas às quais os dados buscados devem corresponder. */
-    idLegislatura?: number[]
-    /** O sentido da ordenação: `asc` para A a Z ou 0 a 9, e `desc` para Z a A ou 9 a 0. */
-    ordem?: 'asc' | 'desc'
-    /** Nome do campo pelo qual a lista deve ser ordenada: `id`, `sigla`, `nome`, `dataInicio` ou `dataFim`. */
-    ordenarPor?: O
-}
+/** 
+ * Array contendo as chaves cujo valor devem ser strings.
+ * É usada nas funções que constroem as URLs.
+ */
+type StringKeys<T> = ReadonlyArray<T>; 
 
+////// ORDENAR POR
+// Básicos.
 /** ID e nome. */
-type OrdenarIDNome = 'id' | 'nome';
+type OrdenarIDN = 'id' | 'nome';
 /** Data inicial e data final. */
 type OrdenarData = 'dataInicio' | 'dataFim';
+
+// Por endpoint.
 /** ID, nome e legislatura. */
-type OrdenarIDNomeLeg = OrdenarIDNome | 'idLegislatura';
-/** ID, nome e sigla da unidade federativa. */
-type OrdenarIDNomeSUF = 'id' | 'nome' | 'siglaUf';
+type OrdenarBlocos = OrdenarIDN | 'idLegislatura';
+/** ID, nome, legislatura, sigla da unidade federativa e sigla do partido. */
+type OrdenarDeputados = OrdenarIDN | 'idLegislatura' | 'siglaUf' | 'siglaPartido';
 /** ID, nome, sigla, data inicial e data final. */
-type OrdenarIDNomeSiglaData = OrdenarIDNome | OrdenarData | 'sigla';
+type OrdenarPartidos = OrdenarIDN | OrdenarData | 'sigla';
+/** ID, nome e sigla da unidade federativa. */
+type OrdenarPartidosMembros = OrdenarIDN | 'siglaUf';
+
+// União dos tipos usados por diferentes partes de um mesmo endpoint.
+// Os tipos resultantes então são usados como constraint em funções.
+type BlocosOrdenarPor = OrdenarBlocos;
+type DeputadosOrdenarPor = OrdenarDeputados;
+type EventosOrdenarPor = '';
+type FrentesOrdenarPor = '';
+type LegislaturasOrdenarPor = '';
+type OrgaosOrdenarPor = '';
+type PartidosOrdenarPor = OrdenarPartidos | OrdenarPartidosMembros;
+type ProposicoesOrdenarPor = '';
+type ReferenciasOrdenarPor = '';
+type VotacoesOrdenarPor = '';
 
 ////// ENDPOINTS
 type CamaraEndpoints =
@@ -77,7 +90,7 @@ type CamaraEndpoints =
     | ReferenciasEndpointURL
     | VotacoesEndpointURL
 
-type Endpoints =
+type NomesDosEndpoints =
     | 'blocos'
     | 'deputados'
     | 'eventos'
@@ -91,7 +104,7 @@ type Endpoints =
 
 type VersaoAPI = 'v2';
 type EndpointURLBase = `https://dadosabertos.camara.leg.br/api/${VersaoAPI}`;
-type TodosEndpointsURL = `${EndpointURLBase}/${Endpoints}`;
+type TodosEndpointsURL = `${EndpointURLBase}/${NomesDosEndpoints}`;
 
 type BlocosEndpointURL = `${EndpointURLBase}/blocos${string}`;
 type DeputadosEndpointURL = `${EndpointURLBase}/deputados${string}`;
@@ -104,11 +117,25 @@ type ProposicoesEndpointURL = `${EndpointURLBase}/proposicoes${string}`;
 type ReferenciasEndpointURL = `${EndpointURLBase}/referencias${string}`;
 type VotacoesEndpointURL = `${EndpointURLBase}/votacoes${string}`;
 
+////// OPÇÕES
+interface EndpointOpcoes<O> {
+    /** Data de início de um intervalo de tempo, no formato `AAAA-MM-DD`. */
+    dataInicio?: string
+    /** Data de término de um intervalo de tempo, no formato `AAAA-MM-DD`. */
+    dataFim?: string
+    /** Número das legislaturas às quais os dados buscados devem corresponder. */
+    idLegislatura?: number[]
+    /** O sentido da ordenação: `asc` para A a Z ou 0 a 9, e `desc` para Z a A ou 9 a 0. */
+    ordem?: 'asc' | 'desc'
+    /** Nome do campo pelo qual a lista deve ser ordenada: `id`, `sigla`, `nome`, `dataInicio` ou `dataFim`. */
+    ordenarPor?: O
+}
+
 ////// BLOCOS
 type DadosDosBlocos =
     | DadosBasicosBloco
 
-interface BlocoEndpointOpcoes extends Omit<EndpointOpcoes<OrdenarIDNomeLeg>, 'dataInicio' | 'dataFim'> {
+interface BlocoEndpointOpcoes extends Omit<EndpointOpcoes<OrdenarBlocos>, 'dataInicio' | 'dataFim'> {
     /** ID de um ou mais blocos partidários. */
     id?: number[]
 }
@@ -123,6 +150,56 @@ interface DadosBasicosBloco {
     readonly uri: BlocosEndpointURL
 }
 
+////// DEPUTADOS
+type DadosDosDeputados =
+    | DadosBasicosDeputado
+    | Deputado
+
+interface DeputadoEndpointOpcoes extends EndpointOpcoes<OrdenarDeputados> {
+    /** ID de um ou mais parlamentares. */
+    id?: number[]
+    /** Nome do parlamentar. */
+    nome?: string
+    /**
+     * Uma ou mais siglas de partidos aos quais sejam filiados os deputados.
+     * Atenção: partidos diferentes podem usar a mesma sigla em diferentes legislaturas!
+     */
+    siglaPartido?: string[]
+    /**
+     * Letra que designe o sexo dos parlamentares que se deseja buscar,
+     * sendo M para masculino e F para feminino.
+     */
+    siglaSexo?: 'M' | 'F'
+    /**
+     * Uma ou mais siglas de unidades federativas (estados e Distrito Federal).
+     * Se ausente, serão retornados deputados de todos os estados.
+     */
+    siglaUf?: UnidadeFederativa[]
+}
+
+interface DadosBasicosDeputado {
+    readonly id: number
+    readonly uri: DeputadosEndpointURL
+    readonly nome: string
+    readonly siglaPartido: string
+    readonly uriPartido: PartidosEndpointURL
+    readonly siglaUf: UnidadeFederativa
+    readonly idLegislatura: number
+    readonly urlFoto: string
+    readonly email: string | null
+}
+
+interface Deputado {
+    readonly cpf: string
+    readonly dataFalecimento: string
+    readonly dataNascimento: string
+    readonly escolaridade: string
+    readonly id: number
+    readonly municipioNascimento: string
+    readonly nomeCivil: string
+    readonly redeSocial: ReadonlyArray<string>
+}
+
 ////// PARTIDOS
 type DadosDosPartidos =
     | DadosBasicosPartido
@@ -130,7 +207,7 @@ type DadosDosPartidos =
     | LideresDoPartido
     | MembrosDoPartido
 
-interface PartidoEndpointOpcoes extends EndpointOpcoes<OrdenarIDNomeSiglaData> {
+interface PartidoEndpointOpcoes extends EndpointOpcoes<OrdenarPartidos> {
     /** Sigla de um ou mais partidos. */
     sigla?: string[]
 }
@@ -174,17 +251,7 @@ interface LiderDoPartido {
     urlFoto: string
 }
 
-interface MembrosDoPartido {
-    readonly id: number
-    readonly uri: DeputadosEndpointURL
-    readonly nome: string
-    readonly siglaPartido: string
-    readonly uriPartido: PartidosEndpointURL
-    readonly siglaUf: UnidadeFederativa
-    readonly idLegislatura: number
-    readonly urlFoto: string
-    readonly email: string | null
-}
+interface MembrosDoPartido extends DadosBasicosDeputado { }
 
 interface LideresDoPartido extends MembrosDoPartido {
     readonly titulo: 'Líder' | '1º Vice-Líder' | 'Vice-Líder'

@@ -18,7 +18,9 @@ export default class Partidos {
     async obterTodos(opcoes?: PartidoEndpointOpcoes): Promise<DadosBasicosPartido[]> {
         const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
         const dadosDosPartidos = await fetch(url);
-        if (dadosDosPartidos.status === 400 || dadosDosPartidos.status === 404) return [];
+
+        const status = APIError.handleStatus(dadosDosPartidos.status);
+        if (status === false) return [];
 
         const json = await dadosDosPartidos.json() as ResultadoBusca<DadosBasicosPartido[], PartidosEndpointURL>;
         if (Array.isArray(json.dados)) {
@@ -39,7 +41,9 @@ export default class Partidos {
 
         const url = `${this.endpoint}/${idDoPartido.toString(10)}`;
         const dadosDoPartido = await fetch(url);
-        if (dadosDoPartido.status === 400 || dadosDoPartido.status === 404) return null;
+
+        const status = APIError.handleStatus(dadosDoPartido.status);
+        if (status === false) return null;
 
         const json = await dadosDoPartido.json() as ResultadoBusca<Partido, PartidosEndpointURL>;
         return json.dados;
@@ -51,7 +55,9 @@ export default class Partidos {
 
         const url = `${this.endpoint}/${idDoPartido.toString(10)}/lideres?itens=100`;
         const lideresDoPartido = await fetch(url);
-        if (lideresDoPartido.status === 400 || lideresDoPartido.status === 404) return [];
+
+        const status = APIError.handleStatus(lideresDoPartido.status);
+        if (status === false) return [];
 
         const json = await lideresDoPartido.json() as ResultadoBusca<LideresDoPartido[], PartidosEndpointURL>;
         if (Array.isArray(json.dados)) {
@@ -68,13 +74,15 @@ export default class Partidos {
      * Opcionalmente, pode-se usar os parâmetros `dataInicio`, `dataFim` ou `idLegislatura`
      * para se obter uma lista de deputados filiados ao partido num certo intervalo de tempo.
      */
-    async obterMembros(idDoPartido: number, opcoes?: EndpointOpcoes<OrdenarIDNomeSUF>): Promise<MembrosDoPartido[]> {
+    async obterMembros(idDoPartido: number, opcoes?: EndpointOpcoes<OrdenarPartidosMembros>): Promise<MembrosDoPartido[]> {
         idDoPartido = verificarID(idDoPartido);
 
         const urlBase: PartidosEndpointURL = `${this.endpoint}/${idDoPartido.toString(10)}/membros?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
         const membrosDoPartido = await fetch(url);
-        if (membrosDoPartido.status === 400 || membrosDoPartido.status === 404) return [];
+
+        const status = APIError.handleStatus(membrosDoPartido.status);
+        if (status === false) return [];
 
         const json = await membrosDoPartido.json() as ResultadoBusca<MembrosDoPartido[], PartidosEndpointURL>;
         if (Array.isArray(json.dados)) {
@@ -87,35 +95,34 @@ export default class Partidos {
     };
 
     /** Constrói a URL com base nos parâmetros fornecidos. */
-    #construirURL<T extends EndpointOpcoes<string>>(urlBase: PartidosEndpointURL, opcoes?: T): PartidosEndpointURL {
-        if (!opcoes) return urlBase;
+    #construirURL<T extends EndpointOpcoes<PartidosOrdenarPor>>(url: PartidosEndpointURL, opcoes?: T): PartidosEndpointURL {
+        if (!opcoes) return url;
 
-        let url = urlBase;
-        for (const [key, value] of Object.entries(opcoes) as [keyof PartidoEndpointOpcoes, unknown][]) {
+        type Opcoes = keyof PartidoEndpointOpcoes;
+        /** Chaves cujo valor devem ser strings. */
+        const stringKeys: StringKeys<Opcoes> = ['ordem', 'ordenarPor'];
+
+        for (const [key, value] of Object.entries(opcoes) as [Opcoes, unknown][]) {
             if (key === 'sigla') {
-                if (!Array.isArray(value)) {
-                    throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
-                };
+                if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
                 for (const sigla of value) {
-                    if (typeof sigla === 'string') {
-                        url += `&${key}=${sigla}`;
-                    };
+                    if (typeof sigla === 'string') url += `&${key}=${sigla}`;
                 };
 
             } else if ((key === 'dataInicio' || key === 'dataFim') && verificarData(value)) {
                 url += `&${key}=${value}`;
 
             } else if (key === 'idLegislatura') {
-                if (typeof value !== 'number' || !Number.isInteger(value)) {
-                    throw new APIError(`${value} não é um ID de legislatura válido.`);
-                };
-                url += `&${key}=${Math.abs(value).toString(10)}`;
+                if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
-            } else if (key === 'ordem' || key === 'ordenarPor') {
-                if (typeof value !== 'string') {
-                    throw new APIError(`${key} deveria ser uma string, mas é um(a) ${typeof value}`);
+                for (const numero of value) {
+                    const id = verificarID(numero);
+                    url += `&${key}=${id.toString(10)}`;
                 };
+
+            } else if (stringKeys.includes(key)) {
+                if (typeof value !== 'string') throw new APIError(`${key} deveria ser uma string, mas é um(a) ${typeof value}`);
                 url += `&${key}=${value}`;
 
             } else {
@@ -126,13 +133,17 @@ export default class Partidos {
         return url;
     };
 
-    /** Obtém os dados da próxima página. */
-    async #obterDadosProximaPagina<T extends DadosDosPartidos>(links: NavegacaoEntrePaginas<PartidosEndpointURL>[]): Promise<T[]> {
+    /** Obtém os dados da próxima página. */ 
+    async #obterDadosProximaPagina<T extends DadosDosPartidos>(links: LinksNavegacao<PartidosEndpointURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {
                 if (!link.href) throw new APIError('O link para a próxima página é inválido');
                 const proximaPagina = await fetch(link.href);
+
+                const status = APIError.handleStatus(proximaPagina.status);
+                if (status === false) return [];
+
                 const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], PartidosEndpointURL>;
                 dados.push(...proximoJson.dados);
 
