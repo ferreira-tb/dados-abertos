@@ -32,13 +32,8 @@ export default class BlocosPartidarios {
         return [];
     };
 
-    /** 
-     * Retorna informações sobre o bloco cujo ID corresponde ao fornecido.
-     * 
-     * Supõe-se que esse método devesse retornar informações mais detalhadas,
-     * mas a API da Câmara dos Deputados ainda não fornece nada além dos dados básicos.
-     * */
-    async obterUm(idDoBloco: number): Promise<DadosBasicosBloco | null> {
+    /** Retorna informações sobre o bloco cujo ID corresponde ao fornecido. */
+    async obterUm(idDoBloco: number): Promise<DadosBasicosBloco> {
         idDoBloco = verificarID(idDoBloco);
 
         const url = `${this.endpoint}/${idDoBloco.toString(10)}`;
@@ -55,7 +50,7 @@ export default class BlocosPartidarios {
 
         type Opcoes = keyof BlocoEndpointOpcoes;
         /** Chaves cujo valor devem ser strings. */
-        const stringKeys: StringKeys<Opcoes> = ['ordem', 'ordenarPor'];
+        const stringKeys: ReadonlyArray<Opcoes> = ['ordem', 'ordenarPor'];
         
         for (const [key, value] of Object.entries(opcoes) as [Opcoes, unknown][]) {
             if (key === 'id' || key === 'idLegislatura' ) {
@@ -79,7 +74,7 @@ export default class BlocosPartidarios {
     };
 
     /** Obtém os dados da próxima página. */
-     async #obterDadosProximaPagina<T extends DadosDosBlocos>(links: LinksNavegacao<BlocosEndpointURL>): Promise<T[]> {
+    async #obterDadosProximaPagina<T extends DadosDosBlocos>(links: LinksNavegacao<BlocosEndpointURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {

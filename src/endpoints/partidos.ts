@@ -30,11 +30,8 @@ export default class Partidos {
         return [];
     };
 
-    /** 
-     * Retorna informações detalhadas sobre um partido.
-     * Caso não exista um partido associado ao ID fornecido, retorna `null`.
-     */
-    async obterUm(idDoPartido: number): Promise<Partido | null> {
+    /** Retorna informações detalhadas sobre um partido. */
+    async obterUm(idDoPartido: number): Promise<Partido> {
         idDoPartido = verificarID(idDoPartido);
 
         const url = `${this.endpoint}/${idDoPartido.toString(10)}`;
@@ -63,11 +60,12 @@ export default class Partidos {
         return [];
     };
 
-    // PENDENTE: https://github.com/CamaraDosDeputados/dados-abertos/issues/324
     /**
      * Retorna uma lista de deputados que estão ou estiveram em exercício pelo partido.
      * Opcionalmente, pode-se usar os parâmetros `dataInicio`, `dataFim` ou `idLegislatura`
      * para se obter uma lista de deputados filiados ao partido num certo intervalo de tempo.
+     * 
+     * PENDENTE: https://github.com/CamaraDosDeputados/dados-abertos/issues/324
      */
     async obterMembros(idDoPartido: number, opcoes?: EndpointOpcoes<OrdenarPartidosMembros>): Promise<MembrosDoPartido[]> {
         idDoPartido = verificarID(idDoPartido);
@@ -94,7 +92,7 @@ export default class Partidos {
 
         type Opcoes = keyof PartidoEndpointOpcoes;
         /** Chaves cujo valor devem ser strings. */
-        const stringKeys: StringKeys<Opcoes> = ['ordem', 'ordenarPor'];
+        const stringKeys: ReadonlyArray<Opcoes> = ['ordem', 'ordenarPor'];
 
         for (const [key, value] of Object.entries(opcoes) as [Opcoes, unknown][]) {
             if (key === 'sigla') {

@@ -28,30 +28,25 @@ type UnidadeFederativa =
     | 'SE' // Sergipe
     | 'TO' // Tocantins
 
-type LinksNavegacao<L> = ReadonlyArray<NavegacaoEntrePaginas<L>>
-interface ResultadoBusca<D, L> {
-    dados: D
-    links: LinksNavegacao<L>
+type LinksNavegacao<L> = ReadonlyArray<NavegacaoEntrePaginas<L>>;
+
+type ResultadoBusca<D, L> = {
+    readonly dados: D
+    readonly links: LinksNavegacao<L>
 }
 
-interface NavegacaoEntrePaginas<L> {
+type NavegacaoEntrePaginas<L> = {
     /** Relação com a página atual. */
     readonly rel: 'first' | 'last' | 'next' | 'self'
     /** Link para a nova página. */
     readonly href: L
 }
 
-interface Bancada {
+type Bancada = {
     readonly tipo: string
     readonly nome: string
     readonly uri: PartidosEndpointURL | null
 }
-
-/** 
- * Array contendo as chaves cujo valor devem ser strings.
- * É usada nas funções que constroem as URLs.
- */
-type StringKeys<T> = ReadonlyArray<T>; 
 
 ////// ORDENAR POR
 // Básicos.
@@ -65,18 +60,22 @@ type OrdenarData = 'dataInicio' | 'dataFim';
 type OrdenarBlocos = OrdenarIDN | 'idLegislatura';
 /** ID, nome, legislatura, sigla da unidade federativa e sigla do partido. */
 type OrdenarDeputados = OrdenarIDN | 'idLegislatura' | 'siglaUf' | 'siglaPartido';
+/** Não há ordenação para as frentes parlamentares. */
+type OrdenarFrentes = never;
+/** ID da legislatura. */
+type OrdenarLegislaturas = 'id';
 /** ID, nome, sigla, data inicial e data final. */
 type OrdenarPartidos = OrdenarIDN | OrdenarData | 'sigla';
 /** ID, nome e sigla da unidade federativa. */
 type OrdenarPartidosMembros = OrdenarIDN | 'siglaUf';
 
 // União dos tipos usados por diferentes partes de um mesmo endpoint.
-// Os tipos resultantes então são usados como constraint em funções.
+// Os tipos resultantes então são usados como constraint em alguns métodos.
 type BlocosOrdenarPor = OrdenarBlocos;
 type DeputadosOrdenarPor = OrdenarDeputados;
 type EventosOrdenarPor = '';
-type FrentesOrdenarPor = never;
-type LegislaturasOrdenarPor = '';
+type FrentesOrdenarPor = OrdenarFrentes;
+type LegislaturasOrdenarPor = OrdenarLegislaturas;
 type OrgaosOrdenarPor = '';
 type PartidosOrdenarPor = OrdenarPartidos | OrdenarPartidosMembros;
 type ProposicoesOrdenarPor = '';
@@ -124,7 +123,7 @@ type ReferenciasEndpointURL = `${EndpointURLBase}/referencias${string}`;
 type VotacoesEndpointURL = `${EndpointURLBase}/votacoes${string}`;
 
 ////// OPÇÕES
-interface EndpointOpcoes<O> {
+type EndpointOpcoes<O> = {
     /** Data de início de um intervalo de tempo, no formato `AAAA-MM-DD`. */
     dataInicio?: string
     /** Data de término de um intervalo de tempo, no formato `AAAA-MM-DD`. */
@@ -146,7 +145,7 @@ interface BlocoEndpointOpcoes extends Omit<EndpointOpcoes<OrdenarBlocos>, 'dataI
     id?: number[]
 }
 
-interface DadosBasicosBloco {
+type DadosBasicosBloco = {
     /** ID do bloco partidário. */
     readonly id: string
     /** Siglas dos partidos associados. */
@@ -184,8 +183,9 @@ interface DeputadoEndpointOpcoes extends EndpointOpcoes<OrdenarDeputados> {
 }
 
 // Interfaces que dependem dessa:
-// CoordenadorDaFrente, DeputadosNoEvento, LideresDaLegislatura, MembrosDoPartido, StatusDoDeputado.
-interface DadosBasicosDeputado {
+// CoordenadorDaFrente, DeputadosNoEvento, LideresDaLegislatura,
+// MembrosDoPartido, MesaDaLegislatura, StatusDoDeputado.
+type DadosBasicosDeputado = {
     readonly id: number
     readonly uri: DeputadosEndpointURL
     readonly nome: string
@@ -204,7 +204,7 @@ interface DadosBasicosDeputado {
  * É preciso verificar item por item após os dados estarem disponíveis,
  * pois é muito provável que alguns tipos estejam incorretos.
  */
-interface Deputado {
+type Deputado = {
     readonly cpf: string
     readonly dataFalecimento: string
     readonly dataNascimento: string
@@ -229,7 +229,7 @@ interface StatusDoDeputado extends DadosBasicosDeputado {
     readonly situacao: string
 }
 
-interface GabineteDoDeputado {
+type GabineteDoDeputado = {
     readonly andar: string
     readonly email: string
     readonly nome: string
@@ -239,7 +239,7 @@ interface GabineteDoDeputado {
 }
 
 /** As despesas com exercício parlamentar do deputado. */
-interface DespesasDoDeputado {
+type DespesasDoDeputado = {
     readonly ano: number
     readonly cnpjCpfFornecedor: string
     readonly codDocumento: number
@@ -260,7 +260,7 @@ interface DespesasDoDeputado {
 }
 
 /** Discursos feitos por um deputado em eventos diversos. */
-interface DiscursosDoDeputado {
+type DiscursosDoDeputado = {
     readonly dataHoraFim: string | null
     readonly dataHoraInicio: string
     readonly faseEvento: FaseEvento
@@ -275,7 +275,7 @@ interface DiscursosDoDeputado {
 }
 
 /** Uma lista de eventos com a participação do parlamentar. */
-interface EventosDoDeputado {
+type EventosDoDeputado = {
     readonly dataHoraFim: string
     readonly dataHoraInicio: string
     readonly descricao: string
@@ -293,7 +293,7 @@ interface EventosDoDeputado {
 interface FrentesDoDeputado extends DadosBasicosFrente { }
 
 /** Os empregos e atividades que o deputado já teve. */
-interface OcupacoesDoDeputado {
+type OcupacoesDoDeputado = {
     readonly anoFim: number
     readonly anoInicio: number
     readonly entidade: string
@@ -303,7 +303,7 @@ interface OcupacoesDoDeputado {
 }
 
 /** Os órgãos dos quais um deputado é integrante. */
-interface OrgaosDoDeputado {
+type OrgaosDoDeputado = {
     readonly codTitulo: string
     readonly dataFim: string
     readonly dataInicio: string
@@ -317,7 +317,7 @@ interface OrgaosDoDeputado {
 
 /** As profissões que o parlamentar declarou à Câmara que já exerceu ou
  * que pode exercer pela sua formação e/ou experiência. */
-interface ProfissoesDoDeputado {
+type ProfissoesDoDeputado = {
     readonly id: number
     readonly idLegislatura: number
     readonly titulo: string
@@ -325,7 +325,7 @@ interface ProfissoesDoDeputado {
 }
 
 ////// EVENTOS
-interface DadosBasicosEvento {
+type DadosBasicosEvento = {
     readonly id: number
     readonly uri: EventosEndpointURL
     readonly dataHoraInicio: string
@@ -358,14 +358,14 @@ type DeputadosNoEvento = ReadonlyArray<DadosBasicosDeputado>;
 /** Órgãos organizadores do evento. */
 type OrgaosDoEvento = ReadonlyArray<DadosBasicosOrgao>;
 
-interface LocalCamara {
+type LocalCamara = {
     readonly andar: string | null
     readonly nome: string | null
     readonly predio: string | null
     readonly sala: string | null
 }
 
-interface FaseEvento {
+type FaseEvento = {
     readonly dataHoraFim: string | null
     readonly dataHoraInicio: string | null
     readonly titulo: string
@@ -377,7 +377,7 @@ type DadosDasFrentes =
     | Frente
     | MembroDaFrente
 
-interface DadosBasicosFrente {
+type DadosBasicosFrente = {
     readonly id: number
     readonly uri: FrentesEndpointURL
     readonly titulo: string
@@ -399,16 +399,15 @@ type CoordenadorDaFrente = {
     [key in keyof DadosBasicosDeputado]: DadosBasicosDeputado[key] | null;
 }
 
-interface FrenteEndpointOpcoes extends Pick<EndpointOpcoes<never>, 'idLegislatura'> { }
+interface FrenteEndpointOpcoes extends Pick<EndpointOpcoes<OrdenarFrentes>, 'idLegislatura'> { }
 
-/** Representa um deputado que faz parte de uma frente parlamentar. */
-interface MembroDaFrente {
-    readonly id: number | null
-    readonly uri: DeputadosEndpointURL | null
-    readonly nome: string | null
-    readonly siglaPartido: string | null
-    readonly uriPartido: PartidosEndpointURL | null
-    readonly siglaUf: UnidadeFederativa | null
+type TipoBaseMembroDaFrente = {
+    readonly id: number
+    readonly uri: DeputadosEndpointURL
+    readonly nome: string
+    readonly siglaPartido: string
+    readonly uriPartido: PartidosEndpointURL
+    readonly siglaUf: UnidadeFederativa
     readonly idLegislatura: number
     readonly urlFoto: string | null
     readonly email: string | null
@@ -418,8 +417,19 @@ interface MembroDaFrente {
     readonly dataFim: string | null
 }
 
+/** Representa um deputado que faz parte de uma frente parlamentar. */
+type MembroDaFrente = {
+    [key in keyof TipoBaseMembroDaFrente]: TipoBaseMembroDaFrente[key] | null;
+}
+
 ////// LEGISLATURAS
-interface DadosBasicosLegislatura {
+type DadosDasLegislaturas =
+    | DadosBasicosLegislatura
+    | Legislatura
+    | LideresDaLegislatura
+    | MesaDaLegislatura
+
+type DadosBasicosLegislatura = {
     readonly id: number
     readonly uri: LegislaturasEndpointURL
     readonly dataInicio: string
@@ -428,22 +438,37 @@ interface DadosBasicosLegislatura {
 
 interface Legislatura extends DadosBasicosLegislatura { }
 
+interface LegislaturaEndpointOpcoes extends Pick<EndpointOpcoes<OrdenarLegislaturas>, 'ordem' | 'ordenarPor'> {
+    /**
+     * Data no formato `AAAA-MM-DD`. Se este parâmetro estiver presente,
+     * a requisição retornará as informações básicas sobre a legislatura em curso na data fornecida.
+     */
+    data?: string;
+    /** ID de uma ou mais legislaturas. */
+    id?: number[]
+}
+
+type LegislaturaMesaEndpointOpcoes = Pick<EndpointOpcoes<never>, 'dataInicio' | 'dataFim'>;
+
 /** Líderes, vice-líderes e representantes na legislatura. */
-interface LideresDaLegislatura {
+type LideresDaLegislatura = {
     readonly parlamentar: DadosBasicosDeputado
     readonly titulo: string
     readonly dataInicio: string
     readonly dataFim: string
 }
 
-interface MesaDaLegislatura {
-    // ERRO 500
+interface MesaDaLegislatura extends DadosBasicosDeputado {
+    readonly dataInicio: string
+    readonly dataFim: string
+    readonly titulo: string
+    readonly codTitulo: string
 }
 
 ////// ORGÃOS
 // Interfaces que dependem dessa:
 // DadosBasicosEvento, EventosDoDeputado, OrgaosDoEvento.
-interface DadosBasicosOrgao {
+type DadosBasicosOrgao = {
     readonly id: number
     readonly uri: OrgaosEndpointURL
     readonly sigla: string
@@ -478,7 +503,7 @@ interface PartidoEndpointOpcoes extends EndpointOpcoes<OrdenarPartidos> {
     sigla?: string[]
 }
 
-interface DadosBasicosPartido {
+type DadosBasicosPartido = {
     /** ID do partido. */
     readonly id: number
     /** Sigla do partido. */
@@ -496,7 +521,7 @@ interface Partido extends DadosBasicosPartido {
     readonly urlFacebook: string | null
 }
 
-interface StatusDoPartido {
+type StatusDoPartido = {
     readonly data: string
     readonly idLegislatura: string
     readonly situacao: 'Ativo' | 'Inativo'
@@ -507,7 +532,7 @@ interface StatusDoPartido {
 }
 
 /** Dados básicos sobre o líder do partido. */
-interface LiderDoPartido {
+type LiderDoPartido = {
     readonly uri: DeputadosEndpointURL
     readonly nome: string
     readonly siglaPartido: string

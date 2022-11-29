@@ -30,11 +30,10 @@ export default class Deputados {
      * Retorna os dados cadastrais de um parlamentar identificado pelo ID fornecido que,
      * em algum momento da história e por qualquer período, entrou em exercício na Câmara.
      * 
-     * Caso não exista um parlamentar associado ao ID, retorna `null`.
-     * 
      * A API DA CÂMARA NÃO ESTÁ FUNCIONANDO - ERRO 500.
+     * https://github.com/CamaraDosDeputados/dados-abertos/issues/325
      */
-    async obterUm(idDoDeputado: number): Promise<Deputado | null> {
+    async obterUm(idDoDeputado: number): Promise<Deputado> {
         idDoDeputado = verificarID(idDoDeputado);
 
         const url = `${this.endpoint}/${idDoDeputado.toString(10)}`;
@@ -51,10 +50,10 @@ export default class Deputados {
 
         type Opcoes = keyof DeputadoEndpointOpcoes;
         /** Chaves cujo valor devem ser strings. */
-        const stringKeys: StringKeys<Opcoes> = ['nome', 'ordem', 'ordenarPor', 'siglaSexo'];
+        const stringKeys: ReadonlyArray<Opcoes> = ['nome', 'ordem', 'ordenarPor', 'siglaSexo'];
         
         for (const [key, value] of Object.entries(opcoes) as [Opcoes, unknown][]) {
-            if (key === 'id' || key === 'idLegislatura' ) {
+            if (key === 'id' || key === 'idLegislatura') {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
                 for (const numero of value) {

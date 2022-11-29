@@ -5,18 +5,11 @@ import { APIError } from "../error.js";
  * @param data Data a ser verificada.
  */
 export function verificarData(data: unknown): data is string {
-    if (typeof data !== 'string') throw new APIError(`${data} não é uma data válida.`);
+    if (typeof data !== 'string' || !(/^\d\d\d\d\-\d\d\-\d\d$/.test(data))) {
+        throw new APIError(`${data} não é uma data válida.`);
+    };
 
-    const camposData = data.split('-');
-    if (camposData.length !== 3) throw new APIError(`${data} não é uma data válida.`);
-
-    camposData.forEach((campo, indice) => {
-        if (indice === 0 && campo.length !== 4) {
-            throw new APIError(`${data} não é uma data válida.`);
-        } else if (indice !== 0 && campo.length !== 2) {
-             throw new APIError(`${data} não é uma data válida.`);
-        };
-
+    data.split('-').forEach((campo, indice) => {
         const numero = Number.parseInt(campo, 10);
         if (Number.isNaN(numero)) throw new APIError(`${data} não é uma data válida.`);
 

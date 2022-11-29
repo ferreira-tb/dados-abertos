@@ -31,11 +31,8 @@ export default class FrentesParlamentares {
         return [];
     };
 
-    /** 
-     * Retorna informações detalhadas sobre uma frente parlamentar.
-     * Caso não exista uma frente parlamentar associada ao ID fornecido, retorna `null`.
-     */
-    async obterUma(idDaFrente: number): Promise<Frente | null> {
+    /** Retorna informações detalhadas sobre uma frente parlamentar. */
+    async obterUma(idDaFrente: number): Promise<Frente> {
         idDaFrente = verificarID(idDaFrente);
 
         const url = `${this.endpoint}/${idDaFrente.toString(10)}`;
@@ -82,14 +79,14 @@ export default class FrentesParlamentares {
         return url;
     };
 
-    // PENDENTE: https://github.com/CamaraDosDeputados/dados-abertos/issues/326
     /** Obtém os dados da próxima página. */ 
     async #obterDadosProximaPagina<T extends DadosBasicosFrente>(links: LinksNavegacao<FrentesEndpointURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {
-                if (!link.href) throw new APIError('O link para a próxima página é inválido');
-                const proximaPagina = await fetch(link.href);
+                if (typeof link.href !== 'string') throw new APIError('O link para a próxima página é inválido');
+                const linkCorrigido = this.#removerParametrosInvalidos(link.href);
+                const proximaPagina = await fetch(linkCorrigido);
                 APIError.handleStatus(proximaPagina.status);
 
                 const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], FrentesEndpointURL>;
@@ -105,5 +102,15 @@ export default class FrentesParlamentares {
         };
 
         return dados;
+    };
+
+    /**
+     * Solução temporária para o problema descrito na issue a seguir.
+     * https://github.com/CamaraDosDeputados/dados-abertos/issues/326
+     * @param link Link para a próxima página.
+     */
+    #removerParametrosInvalidos(link: NavegacaoEntrePaginas<FrentesEndpointURL>['href']) {
+        if (!link.includes('itens')) return link;
+        return link.replace('&itens=1000', '') as typeof link;
     };
 };
