@@ -14,9 +14,7 @@ export default class Deputados {
     async obterTodos(opcoes?: DeputadoEndpointOpcoes): Promise<DadosBasicosDeputado[]> {
         const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
         const dadosDosDeputados = await fetch(url);
-
-        const status = APIError.handleStatus(dadosDosDeputados.status);
-        if (status === false) return [];
+        APIError.handleStatus(dadosDosDeputados.status);
 
         const json = await dadosDosDeputados.json() as ResultadoBusca<DadosBasicosDeputado[], DeputadosEndpointURL>;
         if (Array.isArray(json.dados)) {
@@ -36,14 +34,12 @@ export default class Deputados {
      * 
      * A API DA CÂMARA NÃO ESTÁ FUNCIONANDO - ERRO 500.
      */
-     async obterUm(idDoDeputado: number): Promise<Deputado | null> {
+    async obterUm(idDoDeputado: number): Promise<Deputado | null> {
         idDoDeputado = verificarID(idDoDeputado);
 
         const url = `${this.endpoint}/${idDoDeputado.toString(10)}`;
         const dadosDoDeputado = await fetch(url);
-
-        const status = APIError.handleStatus(dadosDoDeputado.status);
-        if (status === false) return null;
+        APIError.handleStatus(dadosDoDeputado.status);
 
         const json = await dadosDoDeputado.json() as ResultadoBusca<Deputado, DeputadosEndpointURL>;
         return json.dados;
@@ -95,9 +91,7 @@ export default class Deputados {
             if (link.rel === 'next') {
                 if (!link.href) throw new APIError('O link para a próxima página é inválido');
                 const proximaPagina = await fetch(link.href);
-                
-                const status = APIError.handleStatus(proximaPagina.status);
-                if (status === false) return [];
+                APIError.handleStatus(proximaPagina.status);
 
                 const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], DeputadosEndpointURL>;
                 dados.push(...proximoJson.dados);

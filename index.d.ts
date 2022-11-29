@@ -75,7 +75,7 @@ type OrdenarPartidosMembros = OrdenarIDN | 'siglaUf';
 type BlocosOrdenarPor = OrdenarBlocos;
 type DeputadosOrdenarPor = OrdenarDeputados;
 type EventosOrdenarPor = '';
-type FrentesOrdenarPor = '';
+type FrentesOrdenarPor = never;
 type LegislaturasOrdenarPor = '';
 type OrgaosOrdenarPor = '';
 type PartidosOrdenarPor = OrdenarPartidos | OrdenarPartidosMembros;
@@ -372,6 +372,11 @@ interface FaseEvento {
 }
 
 ////// FRENTES
+type DadosDasFrentes =
+    | DadosBasicosFrente
+    | Frente
+    | MembroDaFrente
+
 interface DadosBasicosFrente {
     readonly id: number
     readonly uri: FrentesEndpointURL
@@ -394,16 +399,18 @@ type CoordenadorDaFrente = {
     [key in keyof DadosBasicosDeputado]: DadosBasicosDeputado[key] | null;
 }
 
+interface FrenteEndpointOpcoes extends Pick<EndpointOpcoes<never>, 'idLegislatura'> { }
+
 /** Representa um deputado que faz parte de uma frente parlamentar. */
 interface MembroDaFrente {
-    readonly id: number
-    readonly uri: DeputadosEndpointURL
-    readonly nome: string
-    readonly siglaPartido: string
-    readonly uriPartido: PartidosEndpointURL
-    readonly siglaUf: UnidadeFederativa
+    readonly id: number | null
+    readonly uri: DeputadosEndpointURL | null
+    readonly nome: string | null
+    readonly siglaPartido: string | null
+    readonly uriPartido: PartidosEndpointURL | null
+    readonly siglaUf: UnidadeFederativa | null
     readonly idLegislatura: number
-    readonly urlFoto: string
+    readonly urlFoto: string | null
     readonly email: string | null
     readonly titulo: string
     readonly codTitulo: number

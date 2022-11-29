@@ -20,9 +20,7 @@ export default class BlocosPartidarios {
     async obterTodos(opcoes?: BlocoEndpointOpcoes): Promise<DadosBasicosBloco[]> {
         const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
         const dadosDosBlocos = await fetch(url);
-
-        const status = APIError.handleStatus(dadosDosBlocos.status);
-        if (status === false) return [];
+        APIError.handleStatus(dadosDosBlocos.status);
 
         const json = await dadosDosBlocos.json() as ResultadoBusca<DadosBasicosBloco[], BlocosEndpointURL>;
         if (Array.isArray(json.dados)) {
@@ -45,9 +43,7 @@ export default class BlocosPartidarios {
 
         const url = `${this.endpoint}/${idDoBloco.toString(10)}`;
         const dadosDoBloco = await fetch(url);
-
-        const status = APIError.handleStatus(dadosDoBloco.status);
-        if (status === false) return null;
+        APIError.handleStatus(dadosDoBloco.status);
 
         const json = await dadosDoBloco.json() as ResultadoBusca<DadosBasicosBloco, BlocosEndpointURL>;
         return json.dados;
@@ -89,9 +85,7 @@ export default class BlocosPartidarios {
             if (link.rel === 'next') {
                 if (!link.href) throw new APIError('O link para a próxima página é inválido');
                 const proximaPagina = await fetch(link.href);
-
-                const status = APIError.handleStatus(proximaPagina.status);
-                if (status === false) return [];
+                APIError.handleStatus(proximaPagina.status);
 
                 const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], BlocosEndpointURL>;
                 dados.push(...proximoJson.dados);

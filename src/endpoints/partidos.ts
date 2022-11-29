@@ -18,9 +18,7 @@ export default class Partidos {
     async obterTodos(opcoes?: PartidoEndpointOpcoes): Promise<DadosBasicosPartido[]> {
         const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
         const dadosDosPartidos = await fetch(url);
-
-        const status = APIError.handleStatus(dadosDosPartidos.status);
-        if (status === false) return [];
+        APIError.handleStatus(dadosDosPartidos.status);
 
         const json = await dadosDosPartidos.json() as ResultadoBusca<DadosBasicosPartido[], PartidosEndpointURL>;
         if (Array.isArray(json.dados)) {
@@ -41,9 +39,7 @@ export default class Partidos {
 
         const url = `${this.endpoint}/${idDoPartido.toString(10)}`;
         const dadosDoPartido = await fetch(url);
-
-        const status = APIError.handleStatus(dadosDoPartido.status);
-        if (status === false) return null;
+        APIError.handleStatus(dadosDoPartido.status);
 
         const json = await dadosDoPartido.json() as ResultadoBusca<Partido, PartidosEndpointURL>;
         return json.dados;
@@ -55,9 +51,7 @@ export default class Partidos {
 
         const url = `${this.endpoint}/${idDoPartido.toString(10)}/lideres?itens=100`;
         const lideresDoPartido = await fetch(url);
-
-        const status = APIError.handleStatus(lideresDoPartido.status);
-        if (status === false) return [];
+        APIError.handleStatus(lideresDoPartido.status);
 
         const json = await lideresDoPartido.json() as ResultadoBusca<LideresDoPartido[], PartidosEndpointURL>;
         if (Array.isArray(json.dados)) {
@@ -69,6 +63,7 @@ export default class Partidos {
         return [];
     };
 
+    // PENDENTE: https://github.com/CamaraDosDeputados/dados-abertos/issues/324
     /**
      * Retorna uma lista de deputados que estão ou estiveram em exercício pelo partido.
      * Opcionalmente, pode-se usar os parâmetros `dataInicio`, `dataFim` ou `idLegislatura`
@@ -79,10 +74,9 @@ export default class Partidos {
 
         const urlBase: PartidosEndpointURL = `${this.endpoint}/${idDoPartido.toString(10)}/membros?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
-        const membrosDoPartido = await fetch(url);
 
-        const status = APIError.handleStatus(membrosDoPartido.status);
-        if (status === false) return [];
+        const membrosDoPartido = await fetch(url);
+        APIError.handleStatus(membrosDoPartido.status);
 
         const json = await membrosDoPartido.json() as ResultadoBusca<MembrosDoPartido[], PartidosEndpointURL>;
         if (Array.isArray(json.dados)) {
@@ -140,9 +134,7 @@ export default class Partidos {
             if (link.rel === 'next') {
                 if (!link.href) throw new APIError('O link para a próxima página é inválido');
                 const proximaPagina = await fetch(link.href);
-
-                const status = APIError.handleStatus(proximaPagina.status);
-                if (status === false) return [];
+                APIError.handleStatus(proximaPagina.status);
 
                 const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], PartidosEndpointURL>;
                 dados.push(...proximoJson.dados);
