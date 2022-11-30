@@ -70,6 +70,14 @@ type OrdenarData = 'dataInicio' | 'dataFim';
 type OrdenarBlocos = OrdenarIDN | 'idLegislatura';
 /** ID, nome, legislatura, sigla da unidade federativa e sigla do partido. */
 type OrdenarDeputados = OrdenarIDN | 'idLegislatura' | 'siglaUf' | 'siglaPartido';
+/** Legislatura ou qualquer chave do objeto. */
+type OrdenarDeputadosDespesas = keyof DespesasDoDeputado | 'idLegislatura';
+/** Data e hora iniciais. */
+type OrdenarDeputadosDiscursos = 'dataHoraInicio';
+/** ID, data e hora iniciais e a sigla do órgão. */
+type OrdenarDeputadosEventos = 'id' | 'dataHoraInicio' | 'siglaOrgao';
+/** ID, sigla e nome do orgão, além do título e as datas de início e fim. */
+type OrdenarDeputadosOrgaos = OrdenarData | 'idOrgao' | 'siglaOrgao' | 'nomeOrgao' | 'titulo';
 /** Não há ordenação para as frentes parlamentares. */
 type OrdenarFrentes = never;
 /** ID da legislatura. */
@@ -82,7 +90,13 @@ type OrdenarPartidosMembros = OrdenarIDN | 'siglaUf';
 // União dos tipos usados por diferentes partes de um mesmo endpoint.
 // Os tipos resultantes então são usados como constraint em alguns métodos.
 type BlocosOrdenarPor = OrdenarBlocos;
-type DeputadosOrdenarPor = OrdenarDeputados;
+type DeputadosOrdenarPor =
+    | OrdenarDeputados
+    | OrdenarDeputadosDespesas
+    | OrdenarDeputadosDiscursos
+    | OrdenarDeputadosEventos
+    | OrdenarDeputadosOrgaos;
+
 type EventosOrdenarPor = '';
 type FrentesOrdenarPor = OrdenarFrentes;
 type LegislaturasOrdenarPor = OrdenarLegislaturas;
@@ -146,16 +160,17 @@ type EndpointOpcoes<O> = {
     ordenarPor?: O
 }
 
-type BlocosTodasOpcoes = keyof BlocoEndpointOpcoes;
+type BlocosTodasOpcoes = keyof BlocoOpcoes;
 type DeputadosTodasOpcoes = 
-    | keyof DeputadoEndpointOpcoes
-    | keyof DeputadoDespesasEndpointOpcoes;
+    | keyof DeputadoOpcoes
+    | keyof DeputadoDespesasOpcoes
+    | keyof DeputadoDiscursosOpcoes;
 
 type EventosTodasOpcoes = never;
-type FrentesTodasOpcoes = keyof FrenteEndpointOpcoes;
-type LegislaturasTodasOpcoes = keyof LegislaturaEndpointOpcoes | keyof LegislaturaMesaEndpointOpcoes;
+type FrentesTodasOpcoes = keyof FrenteOpcoes;
+type LegislaturasTodasOpcoes = keyof LegislaturaOpcoes | keyof LegislaturaMesaOpcoes;
 type OrgaosTodasOpcoes = never;
-type PartidosTodasOpcoes = keyof PartidoEndpointOpcoes;
+type PartidosTodasOpcoes = keyof PartidoOpcoes;
 type ProposicoesTodasOpcoes = never;
 type ReferenciasTodasOpcoes = never;
 type VotacoesTodasOpcoes = never;
@@ -164,7 +179,7 @@ type VotacoesTodasOpcoes = never;
 type DadosDosBlocos =
     | DadosBasicosBloco
 
-interface BlocoEndpointOpcoes extends Omit<EndpointOpcoes<OrdenarBlocos>, 'dataInicio' | 'dataFim'> {
+interface BlocoOpcoes extends Omit<EndpointOpcoes<OrdenarBlocos>, 'dataInicio' | 'dataFim'> {
     /** ID de um ou mais blocos partidários. */
     id?: number[]
 }
@@ -184,8 +199,14 @@ type DadosDosDeputados =
     | DadosBasicosDeputado
     | Deputado
     | DespesasDoDeputado
+    | DiscursosDoDeputado
+    | EventosDoDeputado
+    | FrentesDoDeputado
+    | OcupacoesDoDeputado
+    | OrgaosDoDeputado
+    | ProfissoesDoDeputado
 
-interface DeputadoEndpointOpcoes extends EndpointOpcoes<OrdenarDeputados> {
+interface DeputadoOpcoes extends EndpointOpcoes<OrdenarDeputados> {
     /** ID de um ou mais parlamentares. */
     id?: number[]
     /** Nome do parlamentar. */
@@ -208,7 +229,7 @@ interface DeputadoEndpointOpcoes extends EndpointOpcoes<OrdenarDeputados> {
 }
 
 /** Pode ser ordenado por qualquer chave do tipo `DespesasDoDeputado`, além de `idLegislatura`. */
-interface DeputadoDespesasEndpointOpcoes extends Pick<EndpointOpcoes<keyof DespesasDoDeputado>, 'dataInicio' | 'dataFim'> {
+interface DeputadoDespesasOpcoes extends Omit<EndpointOpcoes<OrdenarDeputadosDespesas>, 'dataInicio' | 'dataFim'> {
     /** Um ou mais anos de ocorrência das despesas. */
     ano?: number[]
     /** Um ou mais números dos meses de ocorrência das despesas. */
@@ -219,6 +240,10 @@ interface DeputadoDespesasEndpointOpcoes extends Pick<EndpointOpcoes<keyof Despe
      * */
     cnpjCpfFornecedor?: string
 }
+
+type DeputadoDiscursosOpcoes = EndpointOpcoes<OrdenarDeputadosDiscursos>;
+type DeputadoEventosOpcoes = Omit<EndpointOpcoes<OrdenarDeputadosEventos>, 'idLegislatura'>;
+type DeputadoOrgaosOpcoes = Omit<EndpointOpcoes<OrdenarDeputadosOrgaos>, 'idLegislatura'>;
 
 // Interfaces que dependem dessa:
 // CoordenadorDaFrente, DeputadosNoEvento, LideresDaLegislatura,
@@ -319,7 +344,7 @@ type EventosDoDeputado = {
     readonly orgaos: ReadonlyArray<DadosBasicosOrgao>
     readonly situacao: string
     readonly uri: string
-    readonly urlRegistro: string
+    readonly urlRegistro: string | null
 }
 
 /** As frentes parlamentares das quais um deputado é integrante. */
@@ -327,18 +352,18 @@ type FrentesDoDeputado = DadosBasicosFrente;
 
 /** Os empregos e atividades que o deputado já teve. */
 type OcupacoesDoDeputado = {
-    readonly anoFim: number
-    readonly anoInicio: number
-    readonly entidade: string
-    readonly entidadePais: string
-    readonly entidadeUF: string
+    readonly anoFim: number | null
+    readonly anoInicio: number | null
+    readonly entidade: string | null
+    readonly entidadePais: string | null
+    readonly entidadeUF: string | null
     readonly titulo: string
 }
 
 /** Os órgãos dos quais um deputado é integrante. */
 type OrgaosDoDeputado = {
     readonly codTitulo: string
-    readonly dataFim: string
+    readonly dataFim: string | null
     readonly dataInicio: string
     readonly idOrgao: number
     readonly nomeOrgao: string
@@ -351,10 +376,9 @@ type OrgaosDoDeputado = {
 /** As profissões que o parlamentar declarou à Câmara que já exerceu ou
  * que pode exercer pela sua formação e/ou experiência. */
 type ProfissoesDoDeputado = {
-    readonly id: number
-    readonly idLegislatura: number
+    readonly dataHora: string
+    readonly codTipoProfissao: number
     readonly titulo: string
-    readonly uri: string
 }
 
 ////// EVENTOS
@@ -402,6 +426,8 @@ type LocalCamara = {
     readonly sala: string | null
 }
 
+// Tipos que dependem desse:
+// DiscursosDoDeputado
 type FaseEvento = {
     readonly dataHoraFim: string | null
     readonly dataHoraInicio: string | null
@@ -436,7 +462,7 @@ type CoordenadorDaFrente = {
     [key in keyof DadosBasicosDeputado]: DadosBasicosDeputado[key] | null;
 }
 
-interface FrenteEndpointOpcoes extends Pick<EndpointOpcoes<OrdenarFrentes>, 'idLegislatura'> { }
+interface FrenteOpcoes extends Pick<EndpointOpcoes<OrdenarFrentes>, 'idLegislatura'> { }
 
 type TipoBaseMembroDaFrente = {
     readonly id: number
@@ -475,7 +501,7 @@ type DadosBasicosLegislatura = {
 
 type Legislatura = DadosBasicosLegislatura;
 
-interface LegislaturaEndpointOpcoes extends Pick<EndpointOpcoes<OrdenarLegislaturas>, 'ordem' | 'ordenarPor'> {
+interface LegislaturaOpcoes extends Pick<EndpointOpcoes<OrdenarLegislaturas>, 'ordem' | 'ordenarPor'> {
     /**
      * Data no formato `AAAA-MM-DD`. Se este parâmetro estiver presente,
      * a requisição retornará as informações básicas sobre a legislatura em curso na data fornecida.
@@ -485,7 +511,7 @@ interface LegislaturaEndpointOpcoes extends Pick<EndpointOpcoes<OrdenarLegislatu
     id?: number[]
 }
 
-type LegislaturaMesaEndpointOpcoes = Pick<EndpointOpcoes<never>, 'dataInicio' | 'dataFim'>;
+type LegislaturaMesaOpcoes = Pick<EndpointOpcoes<never>, 'dataInicio' | 'dataFim'>;
 
 /** Líderes, vice-líderes e representantes na legislatura. */
 type LideresDaLegislatura = {
@@ -539,10 +565,12 @@ type DadosDosPartidos =
     | LideresDoPartido
     | MembrosDoPartido
 
-interface PartidoEndpointOpcoes extends EndpointOpcoes<OrdenarPartidos> {
+interface PartidoOpcoes extends EndpointOpcoes<OrdenarPartidos> {
     /** Sigla de um ou mais partidos. */
     sigla?: string[]
 }
+
+type PartidoMembrosOpcoes = EndpointOpcoes<OrdenarPartidosMembros>;
 
 type DadosBasicosPartido = {
     /** ID do partido. */

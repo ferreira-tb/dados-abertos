@@ -11,7 +11,7 @@ export default class Legislaturas {
      * 
      * Os números que identificam as legislaturas são sequenciais, desde a primeira que ocorreu.
      */
-    async obterTodas(opcoes?: LegislaturaEndpointOpcoes): Promise<DadosBasicosLegislatura[]> {
+    async obterTodas(opcoes?: LegislaturaOpcoes): Promise<DadosBasicosLegislatura[]> {
         const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
         const legislaturas = await obter<DadosBasicosLegislatura[], LegislaturasURL>(url);
 
@@ -59,7 +59,7 @@ export default class Legislaturas {
      * Normalmente, cada legislatura tem duas Mesas Diretoras, com presidente, dois vice-presidentes,
      * quatro secretários parlamentares e os suplentes dos secretários.
      */
-    async obterMesa(idDaLegislatura: number, opcoes?: LegislaturaMesaEndpointOpcoes): Promise<MesaDaLegislatura> {
+    async obterMesa(idDaLegislatura: number, opcoes?: LegislaturaMesaOpcoes): Promise<MesaDaLegislatura> {
         idDaLegislatura = verificarID(idDaLegislatura);
 
         const urlBase: LegislaturasURL = `${this.endpoint}/${idDaLegislatura.toString(10)}/mesa`;

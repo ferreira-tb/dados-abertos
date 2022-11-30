@@ -1,5 +1,5 @@
 {
-    "name": "dados-abertos-api",
+    "name": "node-dados-abertos",
     "version": "0.1.0",
     "type": "module",
     "main": "dist/main.js",

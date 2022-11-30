@@ -15,7 +15,7 @@ export default class Partidos {
      * 
      * Também se pode fazer busca por uma ou mais sigla(s), mas, em diferentes legislaturas, pode haver mais de um partido usando a mesma sigla.
      */
-    async obterTodos(opcoes?: PartidoEndpointOpcoes): Promise<DadosBasicosPartido[]> {
+    async obterTodos(opcoes?: PartidoOpcoes): Promise<DadosBasicosPartido[]> {
         const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
         const partidos = await obter<DadosBasicosPartido[], PartidosURL>(url);
         if (Array.isArray(partidos.dados)) {
@@ -61,7 +61,7 @@ export default class Partidos {
      * 
      * PENDENTE: https://github.com/CamaraDosDeputados/dados-abertos/issues/324
      */
-    async obterMembros(idDoPartido: number, opcoes?: EndpointOpcoes<OrdenarPartidosMembros>): Promise<MembrosDoPartido[]> {
+    async obterMembros(idDoPartido: number, opcoes?: PartidoMembrosOpcoes): Promise<MembrosDoPartido[]> {
         idDoPartido = verificarID(idDoPartido);
 
         const urlBase: PartidosURL = `${this.endpoint}/${idDoPartido.toString(10)}/membros?itens=100`;

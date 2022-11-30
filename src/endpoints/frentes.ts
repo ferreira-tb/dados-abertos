@@ -16,7 +16,7 @@ export default class FrentesParlamentares {
      * Uma array com um ou mais números de legislaturas pode ser passada como parâmetro.
      * Se ela for omitida, a função retornada todas as frentes parlamentares criadas desde 2003.
      */
-    async obterTodas(opcoes?: FrenteEndpointOpcoes): Promise<DadosBasicosFrente[]> {
+    async obterTodas(opcoes?: FrenteOpcoes): Promise<DadosBasicosFrente[]> {
         const url = this.#construirURL(this.endpoint, opcoes);
 
         const frentes = await obter<DadosBasicosFrente[], FrentesURL>(url);
@@ -50,7 +50,7 @@ export default class FrentesParlamentares {
     };
 
     /** Constrói a URL com base nos parâmetros fornecidos. */
-    #construirURL(url: FrentesURL, opcoes?: FrenteEndpointOpcoes): FrentesURL {
+    #construirURL(url: FrentesURL, opcoes?: FrenteOpcoes): FrentesURL {
         if (!opcoes) return url;
 
         for (const [key, value] of Object.entries(opcoes) as [FrentesTodasOpcoes, unknown][]) {

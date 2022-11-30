@@ -11,7 +11,7 @@ export default class Deputados {
      * Se não for passado um parâmetro de tempo, como `idLegislatura` ou `dataInicio`,
      * a lista enumerará somente os deputados em exercício no momento da requisição.
      */
-    async obterTodos(opcoes?: DeputadoEndpointOpcoes): Promise<DadosBasicosDeputado[]> {
+    async obterTodos(opcoes?: DeputadoOpcoes): Promise<DadosBasicosDeputado[]> {
         const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
         const deputados = await obter<DadosBasicosDeputado[], DeputadosURL>(url);
         if (Array.isArray(deputados.dados)) {
@@ -42,7 +42,7 @@ export default class Deputados {
      * A lista pode ser filtrada por mês, ano, legislatura, CNPJ ou CPF de um fornecedor.
      * Se não forem passados os parâmetros de tempo, o método retorna os dados dos seis meses anteriores à requisição.
      */
-    async obterDespesas(idDoDeputado: number, opcoes?: DeputadoDespesasEndpointOpcoes): Promise<DespesasDoDeputado[]> {
+    async obterDespesas(idDoDeputado: number, opcoes?: DeputadoDespesasOpcoes): Promise<DespesasDoDeputado[]> {
         idDoDeputado = verificarID(idDoDeputado);
 
         const urlBase: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/despesas?itens=100`;
@@ -65,28 +65,128 @@ export default class Deputados {
      * Caso os parâmetros de tempo (`dataInicio`, `dataFim` e `idLegislatura`) não sejam configurados na requisição,
      * são buscados os discursos ocorridos nos sete dias anteriores ao da requisição.
      */
-    async obterDiscursos() {
+    async obterDiscursos(idDoDeputado: number, opcoes?: DeputadoDiscursosOpcoes): Promise<DiscursosDoDeputado[]> {
+        idDoDeputado = verificarID(idDoDeputado);
 
+        const urlBase: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/discursos?itens=100`;
+        const url = this.#construirURL(urlBase, opcoes);
+
+        const discursos = await obter<DiscursosDoDeputado[], DeputadosURL>(url);
+        if (Array.isArray(discursos.dados)) {
+            const dadosExtras = await this.#obterDadosProximaPagina<DiscursosDoDeputado>(discursos.links);
+            if (dadosExtras.length > 0) discursos.dados.push(...dadosExtras);
+            return discursos.dados;
+        };
+
+        return [];
     };
 
-    async obterEventos() {
+    /**
+     * Retorna uma lista de eventos nos quais a participação do parlamentar era ou é prevista.
+     * 
+     * Um período de tempo pode ser delimitado para a busca.
+     * Se não forem passados parâmetros de tempo, são retornados os eventos num período de cinco dias,
+     * sendo dois antes e dois depois do dia da requisição.
+     * 
+     * Os itens podem ser ordenados por `id`, `siglaOrgao` ou `dataHoraInicio`.
+     */
+    async obterEventos(idDoDeputado: number, opcoes?: DeputadoEventosOpcoes): Promise<EventosDoDeputado[]> {
+        idDoDeputado = verificarID(idDoDeputado);
 
+        const urlBase: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/eventos?itens=100`;
+        const url = this.#construirURL(urlBase, opcoes);
+
+        const eventos = await obter<EventosDoDeputado[], DeputadosURL>(url);
+        if (Array.isArray(eventos.dados)) {
+            const dadosExtras = await this.#obterDadosProximaPagina<EventosDoDeputado>(eventos.links);
+            if (dadosExtras.length > 0) eventos.dados.push(...dadosExtras);
+            return eventos.dados;
+        };
+
+        return [];
     };
 
-    async obterFrentes() {
+    /**
+     * Retorna uma lista de informações básicas sobre as frentes parlamentares das quais
+     * o parlamentar seja membro, ou, no caso de frentes existentes em legislaturas anteriores,
+     * tenha encerrado a legislatura como integrante.
+     */
+    async obterFrentes(idDoDeputado: number): Promise<FrentesDoDeputado[]> {
+        idDoDeputado = verificarID(idDoDeputado);
 
+        const url: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/frentes`;
+        const eventos = await obter<FrentesDoDeputado[], DeputadosURL>(url);
+        if (Array.isArray(eventos.dados)) {
+            const dadosExtras = await this.#obterDadosProximaPagina<FrentesDoDeputado>(eventos.links);
+            if (dadosExtras.length > 0) eventos.dados.push(...dadosExtras);
+            return eventos.dados;
+        };
+
+        return [];
     };
 
-    async obterOcupacoes() {
+    /**
+     * Enumera as atividades profissionais ou ocupacionais que o deputado
+     * já teve em sua carreira e declarou à Câmara dos Deputados.
+     */
+    async obterOcupacoes(idDoDeputado: number): Promise<OcupacoesDoDeputado[]> {
+        idDoDeputado = verificarID(idDoDeputado);
 
+        const url: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/ocupacoes`;
+        const eventos = await obter<OcupacoesDoDeputado[], DeputadosURL>(url);
+        if (Array.isArray(eventos.dados)) {
+            const dadosExtras = await this.#obterDadosProximaPagina<OcupacoesDoDeputado>(eventos.links);
+            if (dadosExtras.length > 0) eventos.dados.push(...dadosExtras);
+            return eventos.dados;
+        };
+
+        return [];
     };
 
-    async obterOrgaos() {
+    /**
+     * Retorna uma lista de órgãos, como as comissões e procuradorias,
+     * dos quais o deputado participa ou participou durante um intervalo de tempo.
+     * 
+     * Cada item identifica um órgão, o cargo ocupado pelo parlamentar
+     * neste órgão (como presidente, vice-presidente, titular ou suplente)
+     * e as datas de início e fim da ocupação deste cargo.
+     * 
+     * Se não for passado algum parâmetro de tempo, são retornados os
+     * órgãos ocupados pelo parlamentar no momento da requisição.
+     * Neste caso a lista será vazia se o deputado não estiver em exercício.
+     */
+    async obterOrgaos(idDoDeputado: number, opcoes?: DeputadoOrgaosOpcoes): Promise<OrgaosDoDeputado[]> {
+        idDoDeputado = verificarID(idDoDeputado);
 
+        const urlBase: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/orgaos?itens=100`;
+        const url = this.#construirURL(urlBase, opcoes);
+
+        const eventos = await obter<OrgaosDoDeputado[], DeputadosURL>(url);
+        if (Array.isArray(eventos.dados)) {
+            const dadosExtras = await this.#obterDadosProximaPagina<OrgaosDoDeputado>(eventos.links);
+            if (dadosExtras.length > 0) eventos.dados.push(...dadosExtras);
+            return eventos.dados;
+        };
+
+        return [];
     };
 
-    async obterProfissoes() {
+    /**
+     * Retorna uma lista de dados sobre profissões que o parlamentar declarou à Câmara
+     * que já exerceu ou que pode exercer pela sua formação e/ou experiência.
+     */
+    async obterProfissoes(idDoDeputado: number): Promise<ProfissoesDoDeputado[]> {
+        idDoDeputado = verificarID(idDoDeputado);
 
+        const url: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/profissoes`;
+        const eventos = await obter<ProfissoesDoDeputado[], DeputadosURL>(url);
+        if (Array.isArray(eventos.dados)) {
+            const dadosExtras = await this.#obterDadosProximaPagina<ProfissoesDoDeputado>(eventos.links);
+            if (dadosExtras.length > 0) eventos.dados.push(...dadosExtras);
+            return eventos.dados;
+        };
+
+        return [];
     };
 
     /** Constrói a URL com base nos parâmetros fornecidos. */

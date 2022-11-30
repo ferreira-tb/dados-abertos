@@ -17,7 +17,7 @@ export default class BlocosPartidarios {
      * Se forem passados números de legislaturas com o parâmetro `idLegislatura`,
      * são listados também os blocos formados e extintos nessas legislaturas.
      */
-    async obterTodos(opcoes?: BlocoEndpointOpcoes): Promise<DadosBasicosBloco[]> {
+    async obterTodos(opcoes?: BlocoOpcoes): Promise<DadosBasicosBloco[]> {
         const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
 
         const blocos = await obter<DadosBasicosBloco[], BlocosURL>(url);
@@ -40,7 +40,7 @@ export default class BlocosPartidarios {
     };
 
     /** Constrói a URL com base nos parâmetros fornecidos. */
-    #construirURL(url: BlocosURL, opcoes?: BlocoEndpointOpcoes): BlocosURL {
+    #construirURL(url: BlocosURL, opcoes?: BlocoOpcoes): BlocosURL {
         if (!opcoes) return url;
 
         /** Chaves cujo valor devem ser strings. */
