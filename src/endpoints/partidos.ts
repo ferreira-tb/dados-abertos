@@ -90,11 +90,10 @@ export default class Partidos {
     #construirURL<T extends EndpointOpcoes<PartidosOrdenarPor>>(url: PartidosEndpointURL, opcoes?: T): PartidosEndpointURL {
         if (!opcoes) return url;
 
-        type Opcoes = keyof PartidoEndpointOpcoes;
         /** Chaves cujo valor devem ser strings. */
-        const stringKeys: ReadonlyArray<Opcoes> = ['ordem', 'ordenarPor'];
+        const stringKeys: ReadonlyArray<PartidosTodasOpcoes> = ['ordem', 'ordenarPor'];
 
-        for (const [key, value] of Object.entries(opcoes) as [Opcoes, unknown][]) {
+        for (const [key, value] of Object.entries(opcoes) as [PartidosTodasOpcoes, unknown][]) {
             if (key === 'sigla') {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 

@@ -29,9 +29,6 @@ export default class Deputados {
     /** 
      * Retorna os dados cadastrais de um parlamentar identificado pelo ID fornecido que,
      * em algum momento da história e por qualquer período, entrou em exercício na Câmara.
-     * 
-     * A API DA CÂMARA NÃO ESTÁ FUNCIONANDO - ERRO 500.
-     * https://github.com/CamaraDosDeputados/dados-abertos/issues/325
      */
     async obterUm(idDoDeputado: number): Promise<Deputado> {
         idDoDeputado = verificarID(idDoDeputado);
@@ -44,16 +41,67 @@ export default class Deputados {
         return json.dados;
     };
 
+    /**
+     * Dá acesso aos registros de pagamentos e reembolsos feitos pela Câmara em prol do deputado,
+     * a título da Cota para Exercício da Atividade Parlamentar, a chamada "cota parlamentar".
+     * 
+     * A lista pode ser filtrada por mês, ano, legislatura, CNPJ ou CPF de um fornecedor.
+     * Se não forem passados os parâmetros de tempo, o método retorna os dados dos seis meses anteriores à requisição.
+     */
+    async obterDespesas(idDoDeputado: number, opcoes?: DeputadoDespesasEndpointOpcoes): Promise<DespesasDoDeputado[]> {
+        idDoDeputado = verificarID(idDoDeputado);
+
+        const urlBase: DeputadosEndpointURL = `${this.endpoint}/${idDoDeputado.toString(10)}/despesas?itens=100`;
+        const url = this.#construirURL(urlBase, opcoes);
+
+        const dadosDasDespesas = await fetch(url);
+        APIError.handleStatus(dadosDasDespesas.status);
+
+        const json = await dadosDasDespesas.json() as ResultadoBusca<DespesasDoDeputado[], DeputadosEndpointURL>;
+        if (Array.isArray(json.dados)) {
+            const dadosExtras = await this.#obterDadosProximaPagina<DespesasDoDeputado>(json.links);
+            if (dadosExtras.length > 0) json.dados.push(...dadosExtras);
+            return json.dados;
+        };
+
+        return [];
+    };
+
+    async obterDiscursos() {
+
+    };
+
+    async obterEventos() {
+
+    };
+
+    async obterFrentes() {
+
+    };
+
+    async obterOcupacoes() {
+
+    };
+
+    async obterOrgaos() {
+
+    };
+
+    async obterProfissoes() {
+
+    };
+
     /** Constrói a URL com base nos parâmetros fornecidos. */
     #construirURL<T extends EndpointOpcoes<DeputadosOrdenarPor>>(url: DeputadosEndpointURL, opcoes?: T): DeputadosEndpointURL {
         if (!opcoes) return url;
 
-        type Opcoes = keyof DeputadoEndpointOpcoes;
+        /** Chaves cujo valor devem ser arrays de números. */
+        const numberArrayKeys: ReadonlyArray<DeputadosTodasOpcoes> = ['ano', 'mes','id', 'idLegislatura'];
         /** Chaves cujo valor devem ser strings. */
-        const stringKeys: ReadonlyArray<Opcoes> = ['nome', 'ordem', 'ordenarPor', 'siglaSexo'];
+        const stringKeys: ReadonlyArray<DeputadosTodasOpcoes> = ['cnpjCpfFornecedor', 'nome', 'ordem', 'ordenarPor', 'siglaSexo'];
         
-        for (const [key, value] of Object.entries(opcoes) as [Opcoes, unknown][]) {
-            if (key === 'id' || key === 'idLegislatura') {
+        for (const [key, value] of Object.entries(opcoes) as [DeputadosTodasOpcoes, unknown][]) {
+            if (numberArrayKeys.includes(key)) {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
                 for (const numero of value) {

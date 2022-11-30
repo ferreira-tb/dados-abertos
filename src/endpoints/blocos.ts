@@ -48,11 +48,10 @@ export default class BlocosPartidarios {
     #construirURL(url: BlocosEndpointURL, opcoes?: BlocoEndpointOpcoes): BlocosEndpointURL {
         if (!opcoes) return url;
 
-        type Opcoes = keyof BlocoEndpointOpcoes;
         /** Chaves cujo valor devem ser strings. */
-        const stringKeys: ReadonlyArray<Opcoes> = ['ordem', 'ordenarPor'];
+        const stringKeys: ReadonlyArray<BlocosTodasOpcoes> = ['ordem', 'ordenarPor'];
         
-        for (const [key, value] of Object.entries(opcoes) as [Opcoes, unknown][]) {
+        for (const [key, value] of Object.entries(opcoes) as [BlocosTodasOpcoes, unknown][]) {
             if (key === 'id' || key === 'idLegislatura' ) {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 

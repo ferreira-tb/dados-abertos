@@ -83,11 +83,10 @@ export default class Legislaturas {
     #construirURL<T extends EndpointOpcoes<LegislaturasOrdenarPor>>(url: LegislaturasEndpointURL, opcoes?: T): LegislaturasEndpointURL {
         if (!opcoes) return url;
 
-        type Opcoes = keyof LegislaturaEndpointOpcoes | keyof LegislaturaMesaEndpointOpcoes;
         /** Chaves cujo valor devem ser strings. */
-        const stringKeys: ReadonlyArray<Opcoes> = ['ordem', 'ordenarPor'];
+        const stringKeys: ReadonlyArray<LegislaturasTodasOpcoes> = ['ordem', 'ordenarPor'];
         
-        for (const [key, value] of Object.entries(opcoes) as [Opcoes, unknown][]) {
+        for (const [key, value] of Object.entries(opcoes) as [LegislaturasTodasOpcoes, unknown][]) {
             if (key === 'id') {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 

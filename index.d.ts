@@ -136,6 +136,20 @@ type EndpointOpcoes<O> = {
     ordenarPor?: O
 }
 
+type BlocosTodasOpcoes = keyof BlocoEndpointOpcoes;
+type DeputadosTodasOpcoes = 
+    | keyof DeputadoEndpointOpcoes
+    | keyof DeputadoDespesasEndpointOpcoes;
+
+type EventosTodasOpcoes = never;
+type FrentesTodasOpcoes = keyof FrenteEndpointOpcoes;
+type LegislaturasTodasOpcoes = keyof LegislaturaEndpointOpcoes | keyof LegislaturaMesaEndpointOpcoes;
+type OrgaosTodasOpcoes = never;
+type PartidosTodasOpcoes = keyof PartidoEndpointOpcoes;
+type ProposicoesTodasOpcoes = never;
+type ReferenciasTodasOpcoes = never;
+type VotacoesTodasOpcoes = never;
+
 ////// BLOCOS
 type DadosDosBlocos =
     | DadosBasicosBloco
@@ -159,6 +173,7 @@ type DadosBasicosBloco = {
 type DadosDosDeputados =
     | DadosBasicosDeputado
     | Deputado
+    | DespesasDoDeputado
 
 interface DeputadoEndpointOpcoes extends EndpointOpcoes<OrdenarDeputados> {
     /** ID de um ou mais parlamentares. */
@@ -182,6 +197,19 @@ interface DeputadoEndpointOpcoes extends EndpointOpcoes<OrdenarDeputados> {
     siglaUf?: UnidadeFederativa[]
 }
 
+/** Pode ser ordenado por qualquer chave do tipo `DespesasDoDeputado`, além de `idLegislatura`. */
+interface DeputadoDespesasEndpointOpcoes extends Pick<EndpointOpcoes<keyof DespesasDoDeputado>, 'dataInicio' | 'dataFim'> {
+    /** Um ou mais anos de ocorrência das despesas. */
+    ano?: number[]
+    /** Um ou mais números dos meses de ocorrência das despesas. */
+    mes?: number[]
+    /** 
+     * CNPJ de uma pessoa jurídica, ou CPF de uma pessoa física,
+     * fornecedora do produto ou serviço (apenas números).
+     * */
+    cnpjCpfFornecedor?: string
+}
+
 // Interfaces que dependem dessa:
 // CoordenadorDaFrente, DeputadosNoEvento, LideresDaLegislatura,
 // MembrosDoPartido, MesaDaLegislatura, StatusDoDeputado.
@@ -197,16 +225,10 @@ type DadosBasicosDeputado = {
     readonly email: string | null
 }
 
-/** 
- * Informações detalhadas sobre um deputado específico.
- * 
- * Essa interface é apenas um rascunho, pois não foi possível obter dados da API da câmara.
- * É preciso verificar item por item após os dados estarem disponíveis,
- * pois é muito provável que alguns tipos estejam incorretos.
- */
+/** Informações detalhadas sobre um deputado específico. */
 type Deputado = {
     readonly cpf: string
-    readonly dataFalecimento: string
+    readonly dataFalecimento: string | null
     readonly dataNascimento: string
     readonly escolaridade: string
     readonly id: number
@@ -217,13 +239,14 @@ type Deputado = {
     readonly ufNascimento: UnidadeFederativa
     readonly ultimoStatus: StatusDoDeputado
     readonly uri: DeputadosEndpointURL
-    readonly urlWebsite: string
+    readonly urlWebsite: string | null
 }
 
 interface StatusDoDeputado extends DadosBasicosDeputado {
     readonly condicaoEleitoral: string
     readonly data: string
-    readonly descricaoStatus: string
+    /** Quando não existente, pode aparecer como uma string vazia ou como `null`. */
+    readonly descricaoStatus: string | null
     readonly gabinete: GabineteDoDeputado
     readonly nomeEleitoral: string
     readonly situacao: string
@@ -253,7 +276,7 @@ type DespesasDoDeputado = {
     readonly parcela: number
     readonly tipoDespesa: string
     readonly tipoDocumento: string
-    readonly urlDocumento: string
+    readonly urlDocumento: string | null
     readonly valorDocumento: number
     readonly valorGlosa: number
     readonly valorLiquido: number
@@ -290,7 +313,7 @@ type EventosDoDeputado = {
 }
 
 /** As frentes parlamentares das quais um deputado é integrante. */
-interface FrentesDoDeputado extends DadosBasicosFrente { }
+type FrentesDoDeputado = DadosBasicosFrente;
 
 /** Os empregos e atividades que o deputado já teve. */
 type OcupacoesDoDeputado = {
@@ -340,8 +363,8 @@ type DadosBasicosEvento = {
 }
 
 type Requerimento = {
-    titulo: string;
-    uri: ProposicoesEndpointURL
+    readonly titulo: string;
+    readonly uri: ProposicoesEndpointURL
 }
 
 /** Representa eventos ocorridos ou previstos nos diversos órgãos da Câmara. */
@@ -436,7 +459,7 @@ type DadosBasicosLegislatura = {
     readonly dataFim: string
 }
 
-interface Legislatura extends DadosBasicosLegislatura { }
+type Legislatura = DadosBasicosLegislatura;
 
 interface LegislaturaEndpointOpcoes extends Pick<EndpointOpcoes<OrdenarLegislaturas>, 'ordem' | 'ordenarPor'> {
     /**
@@ -542,7 +565,7 @@ type LiderDoPartido = {
     readonly urlFoto: string
 }
 
-interface MembrosDoPartido extends DadosBasicosDeputado { }
+type MembrosDoPartido = DadosBasicosDeputado;
 
 interface LideresDoPartido extends MembrosDoPartido {
     readonly titulo: 'Líder' | '1º Vice-Líder' | 'Vice-Líder'

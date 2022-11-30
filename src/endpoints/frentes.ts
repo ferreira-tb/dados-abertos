@@ -61,8 +61,7 @@ export default class FrentesParlamentares {
     #construirURL(url: FrentesEndpointURL, opcoes?: FrenteEndpointOpcoes): FrentesEndpointURL {
         if (!opcoes) return url;
 
-        type Opcoes = keyof FrenteEndpointOpcoes;
-        for (const [key, value] of Object.entries(opcoes) as [Opcoes, unknown][]) {
+        for (const [key, value] of Object.entries(opcoes) as [FrentesTodasOpcoes, unknown][]) {
             if (key === 'idLegislatura') {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
