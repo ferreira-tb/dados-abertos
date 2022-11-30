@@ -1,9 +1,9 @@
-import { verificarID } from "../common/helpers.js";
+import { obter, verificarID } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
 export default class FrentesParlamentares {
     /** URL para o endpoint das frentes parlamentares. */
-    readonly endpoint: FrentesEndpointURL = 'https://dadosabertos.camara.leg.br/api/v2/frentes';
+    readonly endpoint: FrentesURL = 'https://dadosabertos.camara.leg.br/api/v2/frentes';
 
     /**
      * Retorna uma lista de informações sobre uma frente parlamentar,
@@ -18,14 +18,12 @@ export default class FrentesParlamentares {
      */
     async obterTodas(opcoes?: FrenteEndpointOpcoes): Promise<DadosBasicosFrente[]> {
         const url = this.#construirURL(this.endpoint, opcoes);
-        const dadosDasFrentes = await fetch(url);
-        APIError.handleStatus(dadosDasFrentes.status);
 
-        const json = await dadosDasFrentes.json() as ResultadoBusca<DadosBasicosFrente[], FrentesEndpointURL>;
-        if (Array.isArray(json.dados)) {
-            const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosFrente>(json.links);
-            if (dadosExtras.length > 0) json.dados.push(...dadosExtras);
-            return json.dados;
+        const frentes = await obter<DadosBasicosFrente[], FrentesURL>(url);
+        if (Array.isArray(frentes.dados)) {
+            const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosFrente>(frentes.links);
+            if (dadosExtras.length > 0) frentes.dados.push(...dadosExtras);
+            return frentes.dados;
         };
 
         return [];
@@ -35,30 +33,24 @@ export default class FrentesParlamentares {
     async obterUma(idDaFrente: number): Promise<Frente> {
         idDaFrente = verificarID(idDaFrente);
 
-        const url = `${this.endpoint}/${idDaFrente.toString(10)}`;
-        const dadosDaFrente = await fetch(url);
-        APIError.handleStatus(dadosDaFrente.status);
-
-        const json = await dadosDaFrente.json() as ResultadoBusca<Frente, FrentesEndpointURL>;
-        return json.dados;
+        const url: FrentesURL = `${this.endpoint}/${idDaFrente.toString(10)}`;
+        const frente = await obter<Frente, FrentesURL>(url);
+        return frente.dados;
     };
 
     /** Retorna uma lista com os deputados que participam de uma frente parlamentar. */
     async obterMembros(idDaFrente: number): Promise<MembroDaFrente[]> {
         idDaFrente = verificarID(idDaFrente);
 
-        const url: FrentesEndpointURL = `${this.endpoint}/${idDaFrente.toString(10)}/membros`;
-        const membrosDoPartido = await fetch(url);
-        APIError.handleStatus(membrosDoPartido.status);
+        const url: FrentesURL = `${this.endpoint}/${idDaFrente.toString(10)}/membros`;
+        const membros = await obter<MembroDaFrente[], FrentesURL>(url);
 
-        const json = await membrosDoPartido.json() as ResultadoBusca<MembroDaFrente[], FrentesEndpointURL>;
-        if (Array.isArray(json.dados)) return json.dados;
-
+        if (Array.isArray(membros.dados)) return membros.dados;
         return [];
     };
 
     /** Constrói a URL com base nos parâmetros fornecidos. */
-    #construirURL(url: FrentesEndpointURL, opcoes?: FrenteEndpointOpcoes): FrentesEndpointURL {
+    #construirURL(url: FrentesURL, opcoes?: FrenteEndpointOpcoes): FrentesURL {
         if (!opcoes) return url;
 
         for (const [key, value] of Object.entries(opcoes) as [FrentesTodasOpcoes, unknown][]) {
@@ -79,7 +71,7 @@ export default class FrentesParlamentares {
     };
 
     /** Obtém os dados da próxima página. */ 
-    async #obterDadosProximaPagina<T extends DadosBasicosFrente>(links: LinksNavegacao<FrentesEndpointURL>): Promise<T[]> {
+    async #obterDadosProximaPagina<T extends DadosBasicosFrente>(links: LinksNavegacao<FrentesURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {
@@ -88,7 +80,7 @@ export default class FrentesParlamentares {
                 const proximaPagina = await fetch(linkCorrigido);
                 APIError.handleStatus(proximaPagina.status);
 
-                const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], FrentesEndpointURL>;
+                const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], FrentesURL>;
                 dados.push(...proximoJson.dados);
 
                 if (Array.isArray(proximoJson.links)) {
@@ -108,7 +100,7 @@ export default class FrentesParlamentares {
      * https://github.com/CamaraDosDeputados/dados-abertos/issues/326
      * @param link Link para a próxima página.
      */
-    #removerParametrosInvalidos(link: NavegacaoEntrePaginas<FrentesEndpointURL>['href']) {
+    #removerParametrosInvalidos(link: NavegacaoEntrePaginas<FrentesURL>['href']) {
         if (!link.includes('itens')) return link;
         return link.replace('&itens=1000', '') as typeof link;
     };

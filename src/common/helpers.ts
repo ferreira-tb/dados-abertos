@@ -1,5 +1,11 @@
 import { APIError } from "../error.js";
 
+export async function obter<T extends TodosDados | TodosDados[], L extends CamaraEndpoints>(url: L): Promise<ResultadoBusca<T, L>> {
+    const dados = await fetch(url);
+    APIError.handleStatus(dados.status);
+    return await dados.json() as ResultadoBusca<T, L>;
+};
+
 /**
  * Verifica se a data obedece ao formato `AAAA-MM-DD`.
  * @param data Data a ser verificada.

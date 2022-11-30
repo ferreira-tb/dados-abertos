@@ -1,9 +1,9 @@
-import { verificarData, verificarID } from "../common/helpers.js";
+import { obter, verificarData, verificarID } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
 export default class Deputados {
     /** URL para o endpoint dos deputados. */
-    readonly endpoint: DeputadosEndpointURL = 'https://dadosabertos.camara.leg.br/api/v2/deputados';
+    readonly endpoint: DeputadosURL = 'https://dadosabertos.camara.leg.br/api/v2/deputados';
     /**
      * Retorna uma lista de dados básicos sobre deputados que estiveram
      * em exercício parlamentar em algum intervalo de tempo.
@@ -13,14 +13,11 @@ export default class Deputados {
      */
     async obterTodos(opcoes?: DeputadoEndpointOpcoes): Promise<DadosBasicosDeputado[]> {
         const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
-        const dadosDosDeputados = await fetch(url);
-        APIError.handleStatus(dadosDosDeputados.status);
-
-        const json = await dadosDosDeputados.json() as ResultadoBusca<DadosBasicosDeputado[], DeputadosEndpointURL>;
-        if (Array.isArray(json.dados)) {
-            const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosDeputado>(json.links);
-            if (dadosExtras.length > 0) json.dados.push(...dadosExtras);
-            return json.dados;
+        const deputados = await obter<DadosBasicosDeputado[], DeputadosURL>(url);
+        if (Array.isArray(deputados.dados)) {
+            const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosDeputado>(deputados.links);
+            if (dadosExtras.length > 0) deputados.dados.push(...dadosExtras);
+            return deputados.dados;
         };
 
         return [];
@@ -33,12 +30,9 @@ export default class Deputados {
     async obterUm(idDoDeputado: number): Promise<Deputado> {
         idDoDeputado = verificarID(idDoDeputado);
 
-        const url = `${this.endpoint}/${idDoDeputado.toString(10)}`;
-        const dadosDoDeputado = await fetch(url);
-        APIError.handleStatus(dadosDoDeputado.status);
-
-        const json = await dadosDoDeputado.json() as ResultadoBusca<Deputado, DeputadosEndpointURL>;
-        return json.dados;
+        const url: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}`;
+        const deputado = await obter<Deputado, DeputadosURL>(url);
+        return deputado.dados;
     };
 
     /**
@@ -51,22 +45,26 @@ export default class Deputados {
     async obterDespesas(idDoDeputado: number, opcoes?: DeputadoDespesasEndpointOpcoes): Promise<DespesasDoDeputado[]> {
         idDoDeputado = verificarID(idDoDeputado);
 
-        const urlBase: DeputadosEndpointURL = `${this.endpoint}/${idDoDeputado.toString(10)}/despesas?itens=100`;
+        const urlBase: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/despesas?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
 
-        const dadosDasDespesas = await fetch(url);
-        APIError.handleStatus(dadosDasDespesas.status);
-
-        const json = await dadosDasDespesas.json() as ResultadoBusca<DespesasDoDeputado[], DeputadosEndpointURL>;
-        if (Array.isArray(json.dados)) {
-            const dadosExtras = await this.#obterDadosProximaPagina<DespesasDoDeputado>(json.links);
-            if (dadosExtras.length > 0) json.dados.push(...dadosExtras);
-            return json.dados;
+        const despesas = await obter<DespesasDoDeputado[], DeputadosURL>(url);
+        if (Array.isArray(despesas.dados)) {
+            const dadosExtras = await this.#obterDadosProximaPagina<DespesasDoDeputado>(despesas.links);
+            if (dadosExtras.length > 0) despesas.dados.push(...dadosExtras);
+            return despesas.dados;
         };
 
         return [];
     };
 
+    /**
+     * Retorna uma lista de informações sobre os pronunciamentos feitos pelo deputado
+     * que tenham sido registrados, em quaisquer eventos, nos sistemas da Câmara.
+     * 
+     * Caso os parâmetros de tempo (`dataInicio`, `dataFim` e `idLegislatura`) não sejam configurados na requisição,
+     * são buscados os discursos ocorridos nos sete dias anteriores ao da requisição.
+     */
     async obterDiscursos() {
 
     };
@@ -92,7 +90,7 @@ export default class Deputados {
     };
 
     /** Constrói a URL com base nos parâmetros fornecidos. */
-    #construirURL<T extends EndpointOpcoes<DeputadosOrdenarPor>>(url: DeputadosEndpointURL, opcoes?: T): DeputadosEndpointURL {
+    #construirURL<T extends EndpointOpcoes<DeputadosOrdenarPor>>(url: DeputadosURL, opcoes?: T): DeputadosURL {
         if (!opcoes) return url;
 
         /** Chaves cujo valor devem ser arrays de números. */
@@ -132,7 +130,7 @@ export default class Deputados {
     };
 
     /** Obtém os dados da próxima página. */
-    async #obterDadosProximaPagina<T extends DadosDosDeputados>(links: LinksNavegacao<DeputadosEndpointURL>): Promise<T[]> {
+    async #obterDadosProximaPagina<T extends DadosDosDeputados>(links: LinksNavegacao<DeputadosURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {
@@ -140,7 +138,7 @@ export default class Deputados {
                 const proximaPagina = await fetch(link.href);
                 APIError.handleStatus(proximaPagina.status);
 
-                const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], DeputadosEndpointURL>;
+                const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], DeputadosURL>;
                 dados.push(...proximoJson.dados);
 
                 if (Array.isArray(proximoJson.links)) {

@@ -1,9 +1,9 @@
 import { APIError } from "../error.js";
-import { verificarID } from "../common/helpers.js";
+import { obter, verificarID } from "../common/helpers.js";
 
 export default class BlocosPartidarios {
     /** URL para o endpoint dos blocos partidários. */
-    readonly endpoint: BlocosEndpointURL = 'https://dadosabertos.camara.leg.br/api/v2/blocos';
+    readonly endpoint: BlocosURL = 'https://dadosabertos.camara.leg.br/api/v2/blocos';
 
     /**
      * Nas atividades parlamentares, partidos podem se juntar em blocos partidários.
@@ -19,14 +19,12 @@ export default class BlocosPartidarios {
      */
     async obterTodos(opcoes?: BlocoEndpointOpcoes): Promise<DadosBasicosBloco[]> {
         const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
-        const dadosDosBlocos = await fetch(url);
-        APIError.handleStatus(dadosDosBlocos.status);
 
-        const json = await dadosDosBlocos.json() as ResultadoBusca<DadosBasicosBloco[], BlocosEndpointURL>;
-        if (Array.isArray(json.dados)) {
-            const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosBloco>(json.links);
-            if (dadosExtras.length > 0) json.dados.push(...dadosExtras);
-            return json.dados;
+        const blocos = await obter<DadosBasicosBloco[], BlocosURL>(url);
+        if (Array.isArray(blocos.dados)) {
+            const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosBloco>(blocos.links);
+            if (dadosExtras.length > 0) blocos.dados.push(...dadosExtras);
+            return blocos.dados;
         };
 
         return [];
@@ -36,16 +34,13 @@ export default class BlocosPartidarios {
     async obterUm(idDoBloco: number): Promise<DadosBasicosBloco> {
         idDoBloco = verificarID(idDoBloco);
 
-        const url = `${this.endpoint}/${idDoBloco.toString(10)}`;
-        const dadosDoBloco = await fetch(url);
-        APIError.handleStatus(dadosDoBloco.status);
-
-        const json = await dadosDoBloco.json() as ResultadoBusca<DadosBasicosBloco, BlocosEndpointURL>;
-        return json.dados;
+        const url: BlocosURL = `${this.endpoint}/${idDoBloco.toString(10)}`;
+        const bloco = await obter<DadosBasicosBloco, BlocosURL>(url);
+        return bloco.dados;
     };
 
     /** Constrói a URL com base nos parâmetros fornecidos. */
-    #construirURL(url: BlocosEndpointURL, opcoes?: BlocoEndpointOpcoes): BlocosEndpointURL {
+    #construirURL(url: BlocosURL, opcoes?: BlocoEndpointOpcoes): BlocosURL {
         if (!opcoes) return url;
 
         /** Chaves cujo valor devem ser strings. */
@@ -73,7 +68,7 @@ export default class BlocosPartidarios {
     };
 
     /** Obtém os dados da próxima página. */
-    async #obterDadosProximaPagina<T extends DadosDosBlocos>(links: LinksNavegacao<BlocosEndpointURL>): Promise<T[]> {
+    async #obterDadosProximaPagina<T extends DadosDosBlocos>(links: LinksNavegacao<BlocosURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {
@@ -81,7 +76,7 @@ export default class BlocosPartidarios {
                 const proximaPagina = await fetch(link.href);
                 APIError.handleStatus(proximaPagina.status);
 
-                const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], BlocosEndpointURL>;
+                const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], BlocosURL>;
                 dados.push(...proximoJson.dados);
 
                 if (Array.isArray(proximoJson.links)) {
