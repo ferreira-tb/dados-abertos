@@ -1,7 +1,7 @@
 import { APIError } from "../error.js";
 import { obter, verificarID } from "../common/helpers.js";
 
-export default class BlocosPartidarios {
+export class BlocosPartidarios {
     /** URL para o endpoint dos blocos partidários. */
     readonly endpoint: BlocosURL = 'https://dadosabertos.camara.leg.br/api/v2/blocos';
 

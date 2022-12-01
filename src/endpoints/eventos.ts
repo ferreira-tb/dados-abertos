@@ -1,7 +1,7 @@
 import { obter, verificarData, verificarHora, verificarID } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
-export default class Eventos {
+export class Eventos {
     /** URL para o endpoint dos eventos. */
     readonly endpoint: EventosURL = 'https://dadosabertos.camara.leg.br/api/v2/eventos';
 

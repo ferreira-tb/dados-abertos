@@ -1,7 +1,7 @@
 import { obter, verificarData, verificarID } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
-export default class Deputados {
+export class Deputados {
     /** URL para o endpoint dos deputados. */
     readonly endpoint: DeputadosURL = 'https://dadosabertos.camara.leg.br/api/v2/deputados';
     /**

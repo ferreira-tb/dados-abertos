@@ -1,7 +1,7 @@
 import { obter, verificarData, verificarID } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
-export default class Proposicoes {
+export class Proposicoes {
     /** URL para o endpoint das proposições. */
     readonly endpoint: ProposicoesURL = 'https://dadosabertos.camara.leg.br/api/v2/proposicoes';
 

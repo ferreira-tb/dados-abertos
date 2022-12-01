@@ -1,7 +1,7 @@
 import { obter, verificarID } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
-export default class FrentesParlamentares {
+export class FrentesParlamentares {
     /** URL para o endpoint das frentes parlamentares. */
     readonly endpoint: FrentesURL = 'https://dadosabertos.camara.leg.br/api/v2/frentes';
 

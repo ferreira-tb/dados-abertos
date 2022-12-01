@@ -1,7 +1,7 @@
 import { obter, verificarData, verificarID } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
-export default class Legislaturas {
+export class Legislaturas {
     /** URL para o endpoint das legislaturas. */
     readonly endpoint: LegislaturasURL = 'https://dadosabertos.camara.leg.br/api/v2/legislaturas';
 
