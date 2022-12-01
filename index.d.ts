@@ -57,6 +57,8 @@ type TodosDados =
     | DadosDasLegislaturas
     | DadosDosOrgaos
     | DadosDosPartidos
+    | DadosDasProposicoes
+    | DadosDasVotacoes
 
 ////// ORDENAR POR
 // Básicos.
@@ -78,6 +80,8 @@ type OrdenarDeputadosDiscursos = 'dataHoraInicio';
 type OrdenarDeputadosEventos = 'id' | 'dataHoraInicio' | 'siglaOrgao';
 /** ID, sigla e nome do orgão, além do título e as datas de início e fim. */
 type OrdenarDeputadosOrgaos = OrdenarData | 'idOrgao' | 'siglaOrgao' | 'nomeOrgao' | 'titulo';
+/** ID, data e hora, descrição e título. */
+type OrdenarEventos = 'id' | 'dataHoraInicio' | 'dataHoraFim' | 'descricaoSituacao' | 'descricaoTipo' | 'titulo';
 /** Não há ordenação para as frentes parlamentares. */
 type OrdenarFrentes = never;
 /** ID da legislatura. */
@@ -97,7 +101,7 @@ type DeputadosOrdenarPor =
     | OrdenarDeputadosEventos
     | OrdenarDeputadosOrgaos;
 
-type EventosOrdenarPor = '';
+type EventosOrdenarPor = OrdenarEventos;
 type FrentesOrdenarPor = OrdenarFrentes;
 type LegislaturasOrdenarPor = OrdenarLegislaturas;
 type OrgaosOrdenarPor = '';
@@ -166,7 +170,7 @@ type DeputadosTodasOpcoes =
     | keyof DeputadoDespesasOpcoes
     | keyof DeputadoDiscursosOpcoes;
 
-type EventosTodasOpcoes = never;
+type EventosTodasOpcoes = keyof EventoOpcoes;
 type FrentesTodasOpcoes = keyof FrenteOpcoes;
 type LegislaturasTodasOpcoes = keyof LegislaturaOpcoes | keyof LegislaturaMesaOpcoes;
 type OrgaosTodasOpcoes = never;
@@ -247,13 +251,13 @@ type DeputadoOrgaosOpcoes = Omit<EndpointOpcoes<OrdenarDeputadosOrgaos>, 'idLegi
 
 // Interfaces que dependem dessa:
 // CoordenadorDaFrente, DeputadosNoEvento, LideresDaLegislatura,
-// MembrosDoPartido, MesaDaLegislatura, StatusDoDeputado.
+// MembrosDoPartido, MesaDaLegislatura, PautaDoEvento, StatusDoDeputado.
 type DadosBasicosDeputado = {
     readonly id: number
     readonly uri: DeputadosURL
     readonly nome: string
-    readonly siglaPartido: string
-    readonly uriPartido: PartidosURL
+    readonly siglaPartido: string | null
+    readonly uriPartido: PartidosURL | null
     readonly siglaUf: UnidadeFederativa
     readonly idLegislatura: number
     readonly urlFoto: string
@@ -385,6 +389,10 @@ type ProfissoesDoDeputado = {
 type DadosDosEventos =
     | DadosBasicosEvento
     | Evento
+    | DeputadosNoEvento
+    | OrgaosDoEvento
+    | PautaDoEvento
+    | DadosBasicosVotacao
 
 type DadosBasicosEvento = {
     readonly id: number
@@ -400,11 +408,6 @@ type DadosBasicosEvento = {
     readonly urlRegistro: string | null
 }
 
-type Requerimento = {
-    readonly titulo: string;
-    readonly uri: ProposicoesURL
-}
-
 /** Representa eventos ocorridos ou previstos nos diversos órgãos da Câmara. */
 interface Evento extends DadosBasicosEvento {
     readonly uriDeputados: null
@@ -414,10 +417,46 @@ interface Evento extends DadosBasicosEvento {
     readonly urlDocumentoPauta: EventosURL
 }
 
+interface EventoOpcoes extends Omit<EndpointOpcoes<OrdenarEventos>, 'idLegislatura'> {
+    /** ID de um ou mais eventos. */
+    id?: number[]
+    /** ID dos tipos de evento que se deseja obter. */
+    codTipoEvento?: number[]
+    /** ID de tipos de situação de evento. */
+    codSituacao?: number[]
+    /** ID de tipos de órgãos realizadores dos eventos que se deseja obter. */
+    codTipoOrgao?: number[]
+    /** ID dos órgãos. */
+    idOrgao?: number[]
+    /** Hora inicial, no formato `HH:MM`. */
+    horaInicio?: string
+    /** Hora de término, no formato `HH:MM`. */
+    horaFim?: string
+}
+
 /** Deputados participantes de um evento específico. */
 type DeputadosNoEvento = ReadonlyArray<DadosBasicosDeputado>;
 /** Órgãos organizadores do evento. */
 type OrgaosDoEvento = ReadonlyArray<DadosBasicosOrgao>;
+
+type PautaDoEvento = {
+    readonly ordem: number
+    readonly topico: string
+    readonly regime: string
+    readonly codRegime: number
+    readonly titulo: string
+    readonly proposicao_: Proposicao_
+    readonly relator: DadosBasicosDeputado
+    readonly textoParecer: string | null
+    readonly proposicaoRelacionada_: Proposicao_
+    readonly uriVotacao: string | null
+    readonly situacaoItem: string | null
+}
+
+type Requerimento = {
+    readonly titulo: string;
+    readonly uri: ProposicoesURL
+}
 
 type LocalCamara = {
     readonly andar: string | null
@@ -618,4 +657,39 @@ interface LideresDoPartido extends MembrosDoPartido {
     readonly codTitulo: number
     readonly dataInicio: string
     readonly dataFim: string | null
+}
+
+////// PROPOSIÇÕES
+type DadosDasProposicoes = never;
+/**
+ * No endpoint `/eventos/{id}/pauta`, o tipos de `codTipo`, `numero` e `ano` aparecem como números em `proposicao_`.
+ * Contudo, aparecem como `string` em `proposicaoRelacionada_`, no mesmo endpoint.
+ */
+type Proposicao_ = {
+    readonly id: number
+    readonly uri: ProposicoesURL
+    readonly siglaTipo: string
+    readonly codTipo: number | string
+    readonly numero: number | string
+    readonly ano: number | string
+    readonly ementa: string
+}
+
+////// VOTAÇÕES
+type DadosDasVotacoes =
+    | DadosBasicosVotacao
+
+/** Usado diretamente no método `Eventos.prototype.obterVotacoes()`. */
+type DadosBasicosVotacao = {
+    readonly id: string
+    readonly uri: string
+    readonly data: string
+    readonly dataHoraRegistro: string
+    readonly siglaOrgao: string
+    readonly uriOrgao: OrgaosURL
+    readonly uriEvento: EventosURL
+    readonly proposicaoObjeto: string | null
+    readonly uriProposicaoObjeto: string | null
+    readonly descricao: string
+    readonly aprovacao: number
 }

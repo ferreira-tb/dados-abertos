@@ -1,5 +1,5 @@
 import * as fs from 'node:fs/promises';
-import Deputados from './endpoints/deputados.js';
+import Eventos from './endpoints/eventos.js';
 
-const deputados = new Deputados();
-fs.writeFile('test.json', JSON.stringify(await deputados.obterProfissoes(74646)));
+const eventos = new Eventos();
+fs.writeFile('test.json', JSON.stringify(await eventos.obterUm(66716)));

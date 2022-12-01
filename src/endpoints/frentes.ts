@@ -38,7 +38,13 @@ export default class FrentesParlamentares {
         return frente.dados;
     };
 
-    /** Retorna uma lista com os deputados que participam de uma frente parlamentar. */
+    /**
+     * Uma lista dos deputados participantes da frente parlamentar
+     * e os papéis que exerceram nessa frente (signatário, coordenador ou presidente).
+     * 
+     * Observe que, mesmo no caso de frentes parlamentares mistas (compostas por deputados e senadores),
+     * são retornados apenas dados sobre os deputados.
+     */
     async obterMembros(idDaFrente: number): Promise<MembroDaFrente[]> {
         idDaFrente = verificarID(idDaFrente);
 
@@ -77,14 +83,11 @@ export default class FrentesParlamentares {
             if (link.rel === 'next') {
                 if (typeof link.href !== 'string') throw new APIError('O link para a próxima página é inválido');
                 const linkCorrigido = this.#removerParametrosInvalidos(link.href);
-                const proximaPagina = await fetch(linkCorrigido);
-                APIError.handleStatus(proximaPagina.status);
+                const proximaPagina = await obter<T[], FrentesURL>(linkCorrigido);
+                dados.push(...proximaPagina.dados);
 
-                const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], FrentesURL>;
-                dados.push(...proximoJson.dados);
-
-                if (Array.isArray(proximoJson.links)) {
-                    const dadosExtras = await this.#obterDadosProximaPagina<T>(proximoJson.links);
+                if (Array.isArray(proximaPagina.links)) {
+                    const dadosExtras = await this.#obterDadosProximaPagina<T>(proximaPagina.links);
                     if (dadosExtras.length > 0) dados = [...dados, ...dadosExtras];
                 };
 

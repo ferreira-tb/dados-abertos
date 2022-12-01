@@ -15,12 +15,30 @@ export function verificarData(data: unknown): data is string {
         throw new APIError(`${data} não é uma data válida.`);
     };
 
-    data.split('-').forEach((campo, indice) => {
+    data.split('\-').forEach((campo, indice) => {
         const numero = Number.parseInt(campo, 10);
         if (Number.isNaN(numero)) throw new APIError(`${data} não é uma data válida.`);
 
-        if (indice === 1 && (numero < 1 || numero > 12)) throw new APIError(`${data} não é uma data válida.`);
-        if (indice === 2 && (numero < 1 || numero > 31)) throw new APIError(`${data} não é uma data válida.`);
+        if (numero < 1 || (indice === 1 && numero > 12) || (indice === 2 && numero > 31)) {
+            throw new APIError(`${data} não é uma data válida.`);
+        };
+    });
+
+    return true;
+};
+
+export function verificarHora(hora: unknown): hora is string {
+    if (typeof hora !== 'string' || !(/^\d\d\:\d\d$/.test(hora))) {
+        throw new APIError(`${hora} não é uma hora válida.`);
+    };
+
+    hora.split('\:').forEach((campo, indice) => {
+        const numero = Number.parseInt(campo, 10);
+        if (Number.isNaN(numero)) throw new APIError(`${hora} não é uma hora válida.`);
+
+        if (numero < 0 || (indice === 1 && numero > 24) || (indice === 2 && numero > 59)) {
+            throw new APIError(`${hora} não é uma hora válida.`);
+        };
     });
 
     return true;

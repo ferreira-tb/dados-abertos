@@ -235,14 +235,11 @@ export default class Deputados {
         for (const link of links) {
             if (link.rel === 'next') {
                 if (!link.href) throw new APIError('O link para a próxima página é inválido');
-                const proximaPagina = await fetch(link.href);
-                APIError.handleStatus(proximaPagina.status);
+                const proximaPagina = await obter<T[], DeputadosURL>(link.href);
+                dados.push(...proximaPagina.dados);
 
-                const proximoJson = await proximaPagina.json() as ResultadoBusca<T[], DeputadosURL>;
-                dados.push(...proximoJson.dados);
-
-                if (Array.isArray(proximoJson.links)) {
-                    const dadosExtras = await this.#obterDadosProximaPagina<T>(proximoJson.links);
+                if (Array.isArray(proximaPagina.links)) {
+                    const dadosExtras = await this.#obterDadosProximaPagina<T>(proximaPagina.links);
                     if (dadosExtras.length > 0) dados = [...dados, ...dadosExtras];
                 };
 
