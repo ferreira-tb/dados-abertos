@@ -61,17 +61,10 @@ type TodosDados =
     | DadosDasVotacoes
 
 ////// ORDENAR POR
-// Básicos.
-/** ID e nome. */
-type OrdenarIDN = 'id' | 'nome';
-/** Data inicial e data final. */
-type OrdenarData = 'dataInicio' | 'dataFim';
-
-// Por endpoint.
 /** ID, nome e legislatura. */
-type OrdenarBlocos = OrdenarIDN | 'idLegislatura';
+type OrdenarBlocos = 'id' | 'nome' | 'idLegislatura';
 /** ID, nome, legislatura, sigla da unidade federativa e sigla do partido. */
-type OrdenarDeputados = OrdenarIDN | 'idLegislatura' | 'siglaUf' | 'siglaPartido';
+type OrdenarDeputados = 'id' | 'nome' | 'idLegislatura' | 'siglaUf' | 'siglaPartido';
 /** Legislatura ou qualquer chave do objeto. */
 type OrdenarDeputadosDespesas = keyof DespesasDoDeputado | 'idLegislatura';
 /** Data e hora iniciais. */
@@ -79,7 +72,7 @@ type OrdenarDeputadosDiscursos = 'dataHoraInicio';
 /** ID, data e hora iniciais e a sigla do órgão. */
 type OrdenarDeputadosEventos = 'id' | 'dataHoraInicio' | 'siglaOrgao';
 /** ID, sigla e nome do orgão, além do título e as datas de início e fim. */
-type OrdenarDeputadosOrgaos = OrdenarData | 'idOrgao' | 'siglaOrgao' | 'nomeOrgao' | 'titulo';
+type OrdenarDeputadosOrgaos = 'dataInicio' | 'dataFim' | 'idOrgao' | 'siglaOrgao' | 'nomeOrgao' | 'titulo';
 /** ID, data e hora, descrição e título. */
 type OrdenarEventos = 'id' | 'dataHoraInicio' | 'dataHoraFim' | 'descricaoSituacao' | 'descricaoTipo' | 'titulo';
 /** Não há ordenação para as frentes parlamentares. */
@@ -87,9 +80,13 @@ type OrdenarFrentes = never;
 /** ID da legislatura. */
 type OrdenarLegislaturas = 'id';
 /** ID, nome, sigla, data inicial e data final. */
-type OrdenarPartidos = OrdenarIDN | OrdenarData | 'sigla';
+type OrdenarPartidos = 'id' | 'nome' | 'dataInicio' | 'dataFim' | 'sigla';
 /** ID, nome e sigla da unidade federativa. */
-type OrdenarPartidosMembros = OrdenarIDN | 'siglaUf';
+type OrdenarPartidosMembros = 'id' | 'nome' | 'siglaUf';
+/** ID, código e sdo tipo da proposição, */
+type OrdenarProposicoes = 'id' | 'codTipo' | 'siglaTipo' | 'numero' | 'ano';
+/** ID e horário do registro. */
+type OrdenarProposicoesVotacao = 'id' | 'dataHoraRegistro';
 
 // União dos tipos usados por diferentes partes de um mesmo endpoint.
 // Os tipos resultantes então são usados como constraint em alguns métodos.
@@ -106,7 +103,7 @@ type FrentesOrdenarPor = OrdenarFrentes;
 type LegislaturasOrdenarPor = OrdenarLegislaturas;
 type OrgaosOrdenarPor = '';
 type PartidosOrdenarPor = OrdenarPartidos | OrdenarPartidosMembros;
-type ProposicoesOrdenarPor = '';
+type ProposicoesOrdenarPor = OrdenarProposicoes | OrdenarProposicoesVotacao;
 type ReferenciasOrdenarPor = '';
 type VotacoesOrdenarPor = '';
 
@@ -175,7 +172,7 @@ type FrentesTodasOpcoes = keyof FrenteOpcoes;
 type LegislaturasTodasOpcoes = keyof LegislaturaOpcoes | keyof LegislaturaMesaOpcoes;
 type OrgaosTodasOpcoes = never;
 type PartidosTodasOpcoes = keyof PartidoOpcoes;
-type ProposicoesTodasOpcoes = never;
+type ProposicoesTodasOpcoes = keyof ProposicaoOpcoes | keyof ProposicaoTramitacaoOpcoes;
 type ReferenciasTodasOpcoes = never;
 type VotacoesTodasOpcoes = never;
 
@@ -445,10 +442,10 @@ type PautaDoEvento = {
     readonly regime: string
     readonly codRegime: number
     readonly titulo: string
-    readonly proposicao_: Proposicao_
+    readonly proposicao_: DadosBasicosProposicao
     readonly relator: DadosBasicosDeputado
     readonly textoParecer: string | null
-    readonly proposicaoRelacionada_: Proposicao_
+    readonly proposicaoRelacionada_: ProposicaoRelacionada
     readonly uriVotacao: string | null
     readonly situacaoItem: string | null
 }
@@ -660,36 +657,151 @@ interface LideresDoPartido extends MembrosDoPartido {
 }
 
 ////// PROPOSIÇÕES
-type DadosDasProposicoes = never;
-/**
- * No endpoint `/eventos/{id}/pauta`, o tipos de `codTipo`, `numero` e `ano` aparecem como números em `proposicao_`.
- * Contudo, aparecem como `string` em `proposicaoRelacionada_`, no mesmo endpoint.
- */
-type Proposicao_ = {
+type DadosDasProposicoes =
+    | DadosBasicosProposicao
+    | Proposicao
+    | ProposicaoRelacionada
+    | AutorDaProposicao
+    | TemaDaProposicao
+    | TramitacaoDaProposicao
+    | VotacaoDaProposicao
+
+type DadosBasicosProposicao = {
     readonly id: number
     readonly uri: ProposicoesURL
     readonly siglaTipo: string
-    readonly codTipo: number | string
-    readonly numero: number | string
-    readonly ano: number | string
+    readonly codTipo: number
+    readonly numero: number
+    readonly ano: number
     readonly ementa: string
 }
+
+/**
+ * Por algum motivo, as chaves `codTipo`, `numero` e `ano` possuem tipo string
+ * quando a proposição está como proposição relacionada.
+ */
+interface ProposicaoRelacionada extends Omit<DadosBasicosProposicao, 'codTipo' | 'numero' | 'ano'> {
+    readonly codTipo: string
+    readonly numero: string
+    readonly ano: string
+}
+
+interface Proposicao extends DadosBasicosProposicao {
+    readonly dataApresentacao: string
+    readonly uriOrgaoNumerador: OrgaosURL | null
+    readonly statusProposicao: StatusDaProposicao
+    readonly uriAutores: ProposicoesURL
+    readonly descricaoTipo: string
+    readonly ementaDetalhada: string
+    readonly keywords: string
+    readonly uriPropPrincipal: string | null
+    readonly uriPropAnterior: string | null
+    readonly uriPropPosterior: string | null
+    readonly urlInteiroTeor: string | null
+    readonly urnFinal: string | null
+    readonly texto: string | null
+    readonly justificativa: string | null
+}
+
+interface ProposicaoOpcoes extends Omit<EndpointOpcoes<OrdenarProposicoes>, 'idLegislatura'> {
+    /** ID de uma ou mais proposições. */
+    id?: number[]
+    /** Sigla dos tipos das proposições. */
+    siglaTipo?: string[]
+    /** Números oficialmente atribuídos às proposições segundo o art. 137 do Regimento Interno, como o 1234 em “PL 1234/2016”. */
+    numero?: number[]
+    /** Anos de apresentação das proposições, no formato `AAAA`. */
+    ano?: number[]
+    /** ID dos deputados autores das proposições. */
+    idDeputadoAutor?: number[]
+    /** Nome, ou parte do nome, do deputado autor da proposição. */
+    autor?: string
+    /** Siglas dos partidos dos deputadores autores das proposições. */
+    siglaPartidoAutor?: string[]
+    /**
+     * ID do partido do autor. É importante destacar que são mais precisos do que as siglas,
+     * que podem ser usadas por partidos diferentes em épocas diferentes.
+     */
+    idPartidoAutor?: number
+    /** Sigla das unidades federativas pelas quais os autores das proposições tenham sido eleitos. */
+    siglaUfAutor?: UnidadeFederativa[]
+    /** Palavras-chave sobre o tema ao qual a proposição se relaciona. */
+    keywords?: string[]
+    /** Indica se a busca deve trazer apenas proposições que já tenham tramitado no Senado. */
+    tramitacaoSenado?: boolean
+    /**
+     * Data do início do intervalo de tempo em que tenham sido apresentadas
+     * as proposições a serem listadas, no formato `AAAA-MM-DD`.
+     */
+    dataApresentacaoInicio?: string
+    /**
+     * Data do fim do intervalo de tempo em que tenham sido apresentadas
+     * as proposições a serem listadas, no formato `AAAA-MM-DD`.
+     */
+    dataApresentacaoFim?: string
+    /**
+     * Códigos numéricos do tipo de situação em que se encontram as proposições que serão listadas.
+     * 
+     * Atenção: esta opção pode apresentar resultados inesperados, por problemas com o registro dos dados.
+     */
+    codSituacao?: number[]
+    /** Códigos numéricos das áreas temáticas das proposições que serão listadas. */
+    codTema?: number[]
+}
+
+type ProposicaoTramitacaoOpcoes = Pick<EndpointOpcoes<never>, 'dataInicio' | 'dataFim'>;
+type ProposicaoVotacaoOpcoes = Pick<EndpointOpcoes<OrdenarProposicoesVotacao>, 'ordem' | 'ordenarPor'>;
+
+// Quando a representação das tramitações adotada pela API mudar, é aconselhável revisar completamente esse tipo.
+type StatusDaProposicao = {
+    readonly dataHora: string
+    readonly sequencia: number
+    readonly siglaOrgao: string
+    readonly uriOrgao: OrgaosURL
+    readonly uriUltimoRelator: DeputadosURL | null
+    readonly regime: string
+    readonly descricaoTramitacao: string
+    readonly codTipoTramitacao: string
+    readonly descricaoSituacao: string | null
+    readonly codSituacao: number | null
+    readonly despacho: string
+    readonly url: string | null
+    readonly ambito: string
+}
+
+type AutorDaProposicao = {
+    readonly uri: DeputadosURL | OrgaosURL | null
+    readonly nome: string
+    readonly codTipo: number
+    readonly tipo: string
+    readonly ordemAssinatura: number
+    readonly proponente: number
+}
+
+type TemaDaProposicao = {
+    readonly codTema: number
+    readonly tema: string
+    readonly relevancia: number
+}
+
+type TramitacaoDaProposicao = StatusDaProposicao;
+type VotacaoDaProposicao = DadosBasicosVotacao;
 
 ////// VOTAÇÕES
 type DadosDasVotacoes =
     | DadosBasicosVotacao
 
-/** Usado diretamente no método `Eventos.prototype.obterVotacoes()`. */
+/** Usado diretamente nos métodos `Eventos.prototype.obterVotacoes()` e `Proposicoes.prototype.obterVotacoes()`. */
 type DadosBasicosVotacao = {
     readonly id: string
-    readonly uri: string
+    readonly uri: VotacoesURL
     readonly data: string
     readonly dataHoraRegistro: string
     readonly siglaOrgao: string
     readonly uriOrgao: OrgaosURL
     readonly uriEvento: EventosURL
     readonly proposicaoObjeto: string | null
-    readonly uriProposicaoObjeto: string | null
+    readonly uriProposicaoObjeto: ProposicoesURL | null
     readonly descricao: string
     readonly aprovacao: number
 }

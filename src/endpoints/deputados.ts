@@ -193,10 +193,11 @@ export default class Deputados {
     #construirURL<T extends EndpointOpcoes<DeputadosOrdenarPor>>(url: DeputadosURL, opcoes?: T): DeputadosURL {
         if (!opcoes) return url;
 
+        type OpcoesPossiveis = ReadonlyArray<DeputadosTodasOpcoes>;
         /** Chaves cujo valor devem ser arrays de números. */
-        const numberArrayKeys: ReadonlyArray<DeputadosTodasOpcoes> = ['ano', 'mes','id', 'idLegislatura'];
+        const numberArrayKeys: OpcoesPossiveis = ['ano', 'mes','id', 'idLegislatura'];
         /** Chaves cujo valor devem ser strings. */
-        const stringKeys: ReadonlyArray<DeputadosTodasOpcoes> = ['cnpjCpfFornecedor', 'nome', 'ordem', 'ordenarPor', 'siglaSexo'];
+        const stringKeys: OpcoesPossiveis = ['cnpjCpfFornecedor', 'nome', 'ordem', 'ordenarPor', 'siglaSexo'];
         
         for (const [key, value] of Object.entries(opcoes) as [DeputadosTodasOpcoes, unknown][]) {
             if (numberArrayKeys.includes(key)) {

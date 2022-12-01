@@ -118,10 +118,11 @@ export default class Eventos {
     #construirURL<T extends EndpointOpcoes<EventosOrdenarPor>>(url: EventosURL, opcoes?: T): EventosURL {
         if (!opcoes) return url;
 
+        type OpcoesPossiveis = ReadonlyArray<EventosTodasOpcoes>;
         /** Chaves cujo valor devem ser arrays de números. */
-        const numberArrayKeys: ReadonlyArray<EventosTodasOpcoes> = ['id', 'codTipoEvento', 'codSituacao', 'codTipoOrgao', 'idOrgao'];
+        const numberArrayKeys: OpcoesPossiveis = ['id', 'codTipoEvento', 'codSituacao', 'codTipoOrgao', 'idOrgao'];
         /** Chaves cujo valor devem ser strings. */
-        const stringKeys: ReadonlyArray<EventosTodasOpcoes> = ['ordem', 'ordenarPor'];
+        const stringKeys: OpcoesPossiveis = ['ordem', 'ordenarPor'];
         
         for (const [key, value] of Object.entries(opcoes) as [EventosTodasOpcoes, unknown][]) {
             if (numberArrayKeys.includes(key)) {

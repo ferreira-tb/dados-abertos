@@ -1,5 +1,5 @@
 import * as fs from 'node:fs/promises';
-import Eventos from './endpoints/eventos.js';
+import Proposicoes from './endpoints/proposicoes.js';
 
-const eventos = new Eventos();
-fs.writeFile('test.json', JSON.stringify(await eventos.obterUm(66716)));
+const proposicoes = new Proposicoes();
+fs.writeFile('test.json', JSON.stringify(await proposicoes.obterVotacoes(2339806)));
