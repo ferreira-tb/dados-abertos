@@ -1,6 +1,29 @@
 import { obter, verificarData, verificarID } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
+import type {
+    DeputadosURL,
+    DeputadoOpcoes,
+    DadosBasicosDeputado,
+    Deputado,
+    DeputadoDespesasOpcoes,
+    DespesasDoDeputado,
+    DeputadoDiscursosOpcoes,
+    DiscursosDoDeputado,
+    DeputadoEventosOpcoes,
+    EventosDoDeputado,
+    FrentesDoDeputado,
+    OcupacoesDoDeputado,
+    DeputadoOrgaosOpcoes,
+    OrgaosDoDeputado,
+    ProfissoesDoDeputado,
+    EndpointOpcoes,
+    DeputadosOrdenarPor,
+    DeputadosTodasOpcoes,
+    DadosDosDeputados,
+    LinksNavegacao
+} from "../../index.js";
+
 export class Deputados {
     /** URL para o endpoint dos deputados. */
     readonly endpoint: DeputadosURL = 'https://dadosabertos.camara.leg.br/api/v2/deputados';

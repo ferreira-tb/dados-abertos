@@ -1,6 +1,25 @@
 import { obter, verificarData, verificarID } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
+import type {
+    ProposicoesURL,
+    ProposicaoOpcoes,
+    DadosBasicosProposicao,
+    Proposicao,
+    AutorDaProposicao,
+    ProposicaoRelacionada,
+    TemaDaProposicao,
+    ProposicaoTramitacaoOpcoes,
+    TramitacaoDaProposicao,
+    ProposicaoVotacaoOpcoes,
+    VotacaoDaProposicao,
+    EndpointOpcoes,
+    ProposicoesOrdenarPor,
+    ProposicoesTodasOpcoes,
+    DadosDasProposicoes,
+    LinksNavegacao
+} from "../../index.js";
+
 export class Proposicoes {
     /** URL para o endpoint das proposições. */
     readonly endpoint: ProposicoesURL = 'https://dadosabertos.camara.leg.br/api/v2/proposicoes';

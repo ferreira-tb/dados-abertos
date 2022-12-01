@@ -1,6 +1,21 @@
 import { APIError } from "../error.js";
 import { obter, verificarData, verificarID } from "../common/helpers.js";
 
+import type {
+    PartidosURL,
+    PartidoOpcoes,
+    DadosBasicosPartido,
+    Partido,
+    LideresDoPartido,
+    PartidoMembrosOpcoes,
+    MembrosDoPartido,
+    EndpointOpcoes,
+    PartidosOrdenarPor,
+    PartidosTodasOpcoes,
+    DadosDosPartidos,
+    LinksNavegacao
+} from "../../index.js";
+
 export class Partidos {
     /** URL para o endpoint dos partidos. */
     readonly endpoint: PartidosURL = 'https://dadosabertos.camara.leg.br/api/v2/partidos';

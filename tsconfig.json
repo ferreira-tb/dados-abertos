@@ -2,10 +2,11 @@
     "compilerOptions": {
         "module": "es2022",
         "moduleResolution": "nodenext",
-        "outDir": "dist",
-        "lib": ["es2022", "DOM"],
+        "outDir": "lib",
+        "lib": ["es2022", "dom"],
         "target": "es2022",
         "noEmitOnError": true,
+        "declaration": true,
 
         // Modo estrito
         "alwaysStrict": true,
@@ -31,7 +32,6 @@
         "noFallthroughCasesInSwitch": true,
         "forceConsistentCasingInFileNames": true,
         "removeComments": true
-        
     },
 
     "include": ["src/**/*", "index.d.ts"]

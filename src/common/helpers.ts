@@ -1,5 +1,11 @@
 import { APIError } from "../error.js";
 
+import type {
+    TodosDados,
+    CamaraEndpoints,
+    ResultadoBusca
+} from "../../index.js";
+
 export async function obter<T extends TodosDados | TodosDados[], L extends CamaraEndpoints>(url: L): Promise<ResultadoBusca<T, L>> {
     const dados = await fetch(url);
     APIError.handleStatus(dados.status);
