@@ -1,10 +1,9 @@
 import * as fs from 'node:fs/promises';
 import { Orgaos } from './main.js';
 
-const orgaos = new Orgaos();
 const agora = new Date();
 const antes = new Date(new Date().setMonth(0));
-fs.writeFile('test.json', JSON.stringify(await orgaos.obterVotacoes(4, { dataInicio: antes, dataFim: agora })));
+fs.writeFile('test.json', JSON.stringify(await Orgaos.obterVotacoes(4, { dataInicio: antes, dataFim: agora })));
 
 /*
 const ids: string[] = []

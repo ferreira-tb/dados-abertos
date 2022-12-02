@@ -18,7 +18,7 @@ import type {
 
 export class Legislaturas {
     /** URL para o endpoint das legislaturas. */
-    readonly endpoint: LegislaturasURL = 'https://dadosabertos.camara.leg.br/api/v2/legislaturas';
+    static readonly #endpoint: LegislaturasURL = 'https://dadosabertos.camara.leg.br/api/v2/legislaturas';
 
     /**
      * Legislatura é o nome dado ao período de trabalhos parlamentares entre uma eleição e outra.
@@ -26,8 +26,8 @@ export class Legislaturas {
      * 
      * Os números que identificam as legislaturas são sequenciais, desde a primeira que ocorreu.
      */
-    async obterTodas(opcoes?: LegislaturaOpcoes): Promise<DadosBasicosLegislatura[]> {
-        const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
+    public static async obterTodas(opcoes?: LegislaturaOpcoes): Promise<DadosBasicosLegislatura[]> {
+        const url = this.#construirURL(`${this.#endpoint}?itens=100`, opcoes);
         const legislaturas = await obter<DadosBasicosLegislatura[], LegislaturasURL>(url);
 
         if (Array.isArray(legislaturas.dados)) {
@@ -40,10 +40,10 @@ export class Legislaturas {
     };
 
     /** Retorna informações sobre uma determinada legislatura da Câmara. */
-    async obterUma(idDaLegislatura: number): Promise<Legislatura> {
+    public static async obterUma(idDaLegislatura: number): Promise<Legislatura> {
         idDaLegislatura = verificarInteiro(idDaLegislatura);
 
-        const url: LegislaturasURL = `${this.endpoint}/${idDaLegislatura.toString(10)}`;
+        const url: LegislaturasURL = `${this.#endpoint}/${idDaLegislatura.toString(10)}`;
         const legislatura = await obter<Legislatura, LegislaturasURL>(url);
         return legislatura.dados;
     };
@@ -53,10 +53,10 @@ export class Legislaturas {
      * Cada item identifica um parlamentar, uma bancada (partido, bloco ou lideranças de situação e oposição),
      * o título de liderança exercido e o período de exercício do parlamentar nesta posição.
      */
-    async obterLideres(idDaLegislatura: number): Promise<LideresDaLegislatura[]> {
+    public static async obterLideres(idDaLegislatura: number): Promise<LideresDaLegislatura[]> {
         idDaLegislatura = verificarInteiro(idDaLegislatura);
 
-        const url: LegislaturasURL = `${this.endpoint}/${idDaLegislatura.toString(10)}/lideres?itens=100`;
+        const url: LegislaturasURL = `${this.#endpoint}/${idDaLegislatura.toString(10)}/lideres?itens=100`;
         const lideres = await obter<LideresDaLegislatura[], LegislaturasURL>(url);
         if (Array.isArray(lideres.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<LideresDaLegislatura>(lideres.links);
@@ -74,17 +74,17 @@ export class Legislaturas {
      * Normalmente, cada legislatura tem duas Mesas Diretoras, com presidente, dois vice-presidentes,
      * quatro secretários parlamentares e os suplentes dos secretários.
      */
-    async obterMesa(idDaLegislatura: number, opcoes?: LegislaturaMesaOpcoes): Promise<MesaDaLegislatura> {
+    public static async obterMesa(idDaLegislatura: number, opcoes?: LegislaturaMesaOpcoes): Promise<MesaDaLegislatura> {
         idDaLegislatura = verificarInteiro(idDaLegislatura);
 
-        const urlBase: LegislaturasURL = `${this.endpoint}/${idDaLegislatura.toString(10)}/mesa`;
+        const urlBase: LegislaturasURL = `${this.#endpoint}/${idDaLegislatura.toString(10)}/mesa`;
         const url = this.#construirURL(urlBase, opcoes);   
         const mesa = await obter<MesaDaLegislatura, LegislaturasURL>(url);
         return mesa.dados;
     };
 
     /** Constrói a URL com base nas opções fornecidas. */
-    #construirURL<T extends EndpointOpcoes<LegislaturasOrdenarPor>>(url: LegislaturasURL, opcoes?: T): LegislaturasURL {
+    static #construirURL<T extends EndpointOpcoes<LegislaturasOrdenarPor>>(url: LegislaturasURL, opcoes?: T): LegislaturasURL {
         if (!opcoes) return url;
 
         /** Chaves cujo valor devem ser strings. */
@@ -116,7 +116,7 @@ export class Legislaturas {
     };
 
     /** Obtém os dados da próxima página. */ 
-    async #obterDadosProximaPagina<T extends DadosDasLegislaturas>(links: LinksNavegacao<LegislaturasURL>): Promise<T[]> {
+    static async #obterDadosProximaPagina<T extends DadosDasLegislaturas>(links: LinksNavegacao<LegislaturasURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {

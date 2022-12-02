@@ -183,7 +183,7 @@ export type EndpointOpcoes<O> = {
     idLegislatura?: number[]
     /** O sentido da ordenação: `asc` para A a Z ou 0 a 9, e `desc` para Z a A ou 9 a 0. */
     ordem?: 'asc' | 'desc'
-    /** Nome do campo pelo qual a lista deve ser ordenada: `id`, `sigla`, `nome`, `dataInicio` ou `dataFim`. */
+    /** Nome do campo pelo qual a lista deve ser ordenada. */
     ordenarPor?: O
 }
 

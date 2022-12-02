@@ -26,7 +26,7 @@ import type {
 
 export class Deputados {
     /** URL para o endpoint dos deputados. */
-    readonly endpoint: DeputadosURL = 'https://dadosabertos.camara.leg.br/api/v2/deputados';
+    static readonly #endpoint: DeputadosURL = 'https://dadosabertos.camara.leg.br/api/v2/deputados';
     /**
      * Retorna uma lista de dados básicos sobre deputados que estiveram
      * em exercício parlamentar em algum intervalo de tempo.
@@ -34,8 +34,8 @@ export class Deputados {
      * Se não for passada uma opção de tempo, como `idLegislatura` ou `dataInicio`,
      * a lista enumerará somente os deputados em exercício no momento da requisição.
      */
-    async obterTodos(opcoes?: DeputadoOpcoes): Promise<DadosBasicosDeputado[]> {
-        const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
+    public static async obterTodos(opcoes?: DeputadoOpcoes): Promise<DadosBasicosDeputado[]> {
+        const url = this.#construirURL(`${this.#endpoint}?itens=100`, opcoes);
         const deputados = await obter<DadosBasicosDeputado[], DeputadosURL>(url);
         if (Array.isArray(deputados.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosDeputado>(deputados.links);
@@ -50,10 +50,10 @@ export class Deputados {
      * Retorna os dados cadastrais de um parlamentar identificado pelo ID fornecido que,
      * em algum momento da história e por qualquer período, entrou em exercício na Câmara.
      */
-    async obterUm(idDoDeputado: number): Promise<Deputado> {
+    public static async obterUm(idDoDeputado: number): Promise<Deputado> {
         idDoDeputado = verificarInteiro(idDoDeputado);
 
-        const url: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}`;
+        const url: DeputadosURL = `${this.#endpoint}/${idDoDeputado.toString(10)}`;
         const deputado = await obter<Deputado, DeputadosURL>(url);
         return deputado.dados;
     };
@@ -65,10 +65,10 @@ export class Deputados {
      * A lista pode ser filtrada por mês, ano, legislatura, CNPJ ou CPF de um fornecedor.
      * Se não forem passadas as opções de tempo, o método retorna os dados dos seis meses anteriores à requisição.
      */
-    async obterDespesas(idDoDeputado: number, opcoes?: DeputadoDespesasOpcoes): Promise<DespesasDoDeputado[]> {
+    public static async obterDespesas(idDoDeputado: number, opcoes?: DeputadoDespesasOpcoes): Promise<DespesasDoDeputado[]> {
         idDoDeputado = verificarInteiro(idDoDeputado);
 
-        const urlBase: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/despesas?itens=100`;
+        const urlBase: DeputadosURL = `${this.#endpoint}/${idDoDeputado.toString(10)}/despesas?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
 
         const despesas = await obter<DespesasDoDeputado[], DeputadosURL>(url);
@@ -88,10 +88,10 @@ export class Deputados {
      * Caso as opções de tempo (`dataInicio`, `dataFim` e `idLegislatura`) não sejam configuradas na requisição,
      * são buscados os discursos ocorridos nos sete dias anteriores ao da requisição.
      */
-    async obterDiscursos(idDoDeputado: number, opcoes?: DeputadoDiscursosOpcoes): Promise<DiscursosDoDeputado[]> {
+    public static async obterDiscursos(idDoDeputado: number, opcoes?: DeputadoDiscursosOpcoes): Promise<DiscursosDoDeputado[]> {
         idDoDeputado = verificarInteiro(idDoDeputado);
 
-        const urlBase: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/discursos?itens=100`;
+        const urlBase: DeputadosURL = `${this.#endpoint}/${idDoDeputado.toString(10)}/discursos?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
 
         const discursos = await obter<DiscursosDoDeputado[], DeputadosURL>(url);
@@ -113,10 +113,10 @@ export class Deputados {
      * 
      * Os itens podem ser ordenados por `id`, `siglaOrgao` ou `dataHoraInicio`.
      */
-    async obterEventos(idDoDeputado: number, opcoes?: DeputadoEventosOpcoes): Promise<EventosDoDeputado[]> {
+    public static async obterEventos(idDoDeputado: number, opcoes?: DeputadoEventosOpcoes): Promise<EventosDoDeputado[]> {
         idDoDeputado = verificarInteiro(idDoDeputado);
 
-        const urlBase: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/eventos?itens=100`;
+        const urlBase: DeputadosURL = `${this.#endpoint}/${idDoDeputado.toString(10)}/eventos?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
 
         const eventos = await obter<EventosDoDeputado[], DeputadosURL>(url);
@@ -134,10 +134,10 @@ export class Deputados {
      * o parlamentar seja membro, ou, no caso de frentes existentes em legislaturas anteriores,
      * tenha encerrado a legislatura como integrante.
      */
-    async obterFrentes(idDoDeputado: number): Promise<FrentesDoDeputado[]> {
+    public static async obterFrentes(idDoDeputado: number): Promise<FrentesDoDeputado[]> {
         idDoDeputado = verificarInteiro(idDoDeputado);
 
-        const url: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/frentes`;
+        const url: DeputadosURL = `${this.#endpoint}/${idDoDeputado.toString(10)}/frentes`;
         const eventos = await obter<FrentesDoDeputado[], DeputadosURL>(url);
         if (Array.isArray(eventos.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<FrentesDoDeputado>(eventos.links);
@@ -152,10 +152,10 @@ export class Deputados {
      * Enumera as atividades profissionais ou ocupacionais que o deputado
      * já teve em sua carreira e declarou à Câmara dos Deputados.
      */
-    async obterOcupacoes(idDoDeputado: number): Promise<OcupacoesDoDeputado[]> {
+    public static async obterOcupacoes(idDoDeputado: number): Promise<OcupacoesDoDeputado[]> {
         idDoDeputado = verificarInteiro(idDoDeputado);
 
-        const url: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/ocupacoes`;
+        const url: DeputadosURL = `${this.#endpoint}/${idDoDeputado.toString(10)}/ocupacoes`;
         const eventos = await obter<OcupacoesDoDeputado[], DeputadosURL>(url);
         if (Array.isArray(eventos.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<OcupacoesDoDeputado>(eventos.links);
@@ -178,10 +178,10 @@ export class Deputados {
      * órgãos ocupados pelo parlamentar no momento da requisição.
      * Neste caso a lista será vazia se o deputado não estiver em exercício.
      */
-    async obterOrgaos(idDoDeputado: number, opcoes?: DeputadoOrgaosOpcoes): Promise<OrgaosDoDeputado[]> {
+    public static async obterOrgaos(idDoDeputado: number, opcoes?: DeputadoOrgaosOpcoes): Promise<OrgaosDoDeputado[]> {
         idDoDeputado = verificarInteiro(idDoDeputado);
 
-        const urlBase: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/orgaos?itens=100`;
+        const urlBase: DeputadosURL = `${this.#endpoint}/${idDoDeputado.toString(10)}/orgaos?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
 
         const eventos = await obter<OrgaosDoDeputado[], DeputadosURL>(url);
@@ -198,10 +198,10 @@ export class Deputados {
      * Retorna uma lista de dados sobre profissões que o parlamentar declarou à Câmara
      * que já exerceu ou que pode exercer pela sua formação e/ou experiência.
      */
-    async obterProfissoes(idDoDeputado: number): Promise<ProfissoesDoDeputado[]> {
+    public static async obterProfissoes(idDoDeputado: number): Promise<ProfissoesDoDeputado[]> {
         idDoDeputado = verificarInteiro(idDoDeputado);
 
-        const url: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/profissoes`;
+        const url: DeputadosURL = `${this.#endpoint}/${idDoDeputado.toString(10)}/profissoes`;
         const eventos = await obter<ProfissoesDoDeputado[], DeputadosURL>(url);
         if (Array.isArray(eventos.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<ProfissoesDoDeputado>(eventos.links);
@@ -213,7 +213,7 @@ export class Deputados {
     };
 
     /** Constrói a URL com base nas opções fornecidas. */
-    #construirURL<T extends EndpointOpcoes<DeputadosOrdenarPor>>(url: DeputadosURL, opcoes?: T): DeputadosURL {
+    static #construirURL<T extends EndpointOpcoes<DeputadosOrdenarPor>>(url: DeputadosURL, opcoes?: T): DeputadosURL {
         if (!opcoes) return url;
 
         type OpcoesPossiveis = ReadonlyArray<DeputadosTodasOpcoes>;
@@ -255,7 +255,7 @@ export class Deputados {
     };
 
     /** Obtém os dados da próxima página. */
-    async #obterDadosProximaPagina<T extends DadosDosDeputados>(links: LinksNavegacao<DeputadosURL>): Promise<T[]> {
+    static async #obterDadosProximaPagina<T extends DadosDosDeputados>(links: LinksNavegacao<DeputadosURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {

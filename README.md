@@ -16,35 +16,33 @@ Escolha os temas sobre o quais quer obter informações e importe-os.
 ```javascript
 import { Deputados, Votacoes } from 'dados-abertos';
 
-const deputados = new Deputados();
-
 // Lista com todos os deputados.
-const listaDeputados = await deputados.obterTodos();
+const listaDeputados = await Deputados.obterTodos();
 // Detalhes sobre um deputado específico.
-const joao = await deputados.obterUm(123456);
+const joao = await Deputados.obterUm(123456);
 // Despesas do deputado.
-const despesas = await deputados.obterDespesas(123456);
-
-const votacoes = new Votacoes();
+const despesas = await Deputados.obterDespesas(123456);
 
 // Votações recentes.
-const votacoesRecentes = await votacoes.obterTodas();
+const votacoesRecentes = await Votacoes.obterTodas();
 // Detalhes sobre uma votação.
-const aquelaVotacao = await votacoes.obterUma('1234567-89');
+const aquelaVotacao = await Votacoes.obterUma('1234567-89');
 // Como cada deputado votou.
-const votos = await votacoes.obterVotos('1234567-89');
+const votos = await Votacoes.obterVotos('1234567-89');
 
 // E muito mais!
 ```
 
-## Temas disponíveis
+## Documentação
 
-- `BlocosPartidarios`
-- `Deputados`
-- `Eventos`
-- `FrentesParlamentares`
-- `Legislaturas`
-- `Orgaos`
-- `Partidos`
-- `Proposicoes`
-- `Votacoes`
+Para entender como utilizar cada um, consulte a [wiki](https://github.com/ferreira-tb/node-dados-abertos/wiki) do repositório.
+
+- [`BlocosPartidarios`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Blocos-Partid%C3%A1rios)
+- [`Deputados`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Deputados)
+- [`Eventos`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Eventos)
+- [`FrentesParlamentares`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Frentes-Parlamentares)
+- [`Legislaturas`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Legislaturas)
+- [`Orgaos`](https://github.com/ferreira-tb/node-dados-abertos/wiki/%C3%93rg%C3%A3os)
+- [`Partidos`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Partidos)
+- [`Proposicoes`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Proposi%C3%A7%C3%B5es)
+- [`Votacoes`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Vota%C3%A7%C3%B5es)

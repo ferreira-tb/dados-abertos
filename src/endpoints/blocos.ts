@@ -12,7 +12,7 @@ import type {
 
 export class BlocosPartidarios {
     /** URL para o endpoint dos blocos partidários. */
-    readonly endpoint: BlocosURL = 'https://dadosabertos.camara.leg.br/api/v2/blocos';
+    static readonly #endpoint: BlocosURL = 'https://dadosabertos.camara.leg.br/api/v2/blocos';
 
     /**
      * Nas atividades parlamentares, partidos podem se juntar em blocos partidários.
@@ -22,12 +22,12 @@ export class BlocosPartidarios {
      * Os blocos só podem existir até o fim da legislatura em que foram criados:
      * na legislatura seguinte, os mesmos partidos, se associados, formam um novo bloco.
      * 
-     * A função retorna uma lista dos blocos em atividade no momento.
+     * Este método retorna uma lista dos blocos em atividade no momento.
      * Se forem passados números de legislaturas com a opção `idLegislatura`,
      * são listados também os blocos formados e extintos nessas legislaturas.
      */
-    async obterTodos(opcoes?: BlocoOpcoes): Promise<DadosBasicosBloco[]> {
-        const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
+    public static async obterTodos(opcoes?: BlocoOpcoes): Promise<DadosBasicosBloco[]> {
+        const url = this.#construirURL(`${this.#endpoint}?itens=100`, opcoes);
 
         const blocos = await obter<DadosBasicosBloco[], BlocosURL>(url);
         if (Array.isArray(blocos.dados)) {
@@ -40,16 +40,16 @@ export class BlocosPartidarios {
     };
 
     /** Retorna informações sobre o bloco cujo ID corresponde ao fornecido. */
-    async obterUm(idDoBloco: number): Promise<DadosBasicosBloco> {
+    public static async obterUm(idDoBloco: number): Promise<DadosBasicosBloco> {
         idDoBloco = verificarInteiro(idDoBloco);
 
-        const url: BlocosURL = `${this.endpoint}/${idDoBloco.toString(10)}`;
+        const url: BlocosURL = `${this.#endpoint}/${idDoBloco.toString(10)}`;
         const bloco = await obter<DadosBasicosBloco, BlocosURL>(url);
         return bloco.dados;
     };
 
     /** Constrói a URL com base nas opções fornecidas. */
-    #construirURL(url: BlocosURL, opcoes?: BlocoOpcoes): BlocosURL {
+    static #construirURL(url: BlocosURL, opcoes?: BlocoOpcoes): BlocosURL {
         if (!opcoes) return url;
 
         /** Chaves cujo valor devem ser strings. */
@@ -77,7 +77,7 @@ export class BlocosPartidarios {
     };
 
     /** Obtém os dados da próxima página. */
-    async #obterDadosProximaPagina<T extends DadosDosBlocos>(links: LinksNavegacao<BlocosURL>): Promise<T[]> {
+    static async #obterDadosProximaPagina<T extends DadosDosBlocos>(links: LinksNavegacao<BlocosURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {

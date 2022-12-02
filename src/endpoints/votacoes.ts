@@ -18,7 +18,7 @@ import type {
 
 export class Votacoes {
     /** URL para o endpoint das votações. */
-    readonly endpoint: VotacoesURL = 'https://dadosabertos.camara.leg.br/api/v2/votacoes';
+    static readonly #endpoint: VotacoesURL = 'https://dadosabertos.camara.leg.br/api/v2/votacoes';
 
     /**
      * Retorna uma lista de informações básicas sobre as votações ocorridas em eventos dos diversos órgãos da Câmara.
@@ -38,8 +38,8 @@ export class Votacoes {
      * Para mais informações, veja a página de tutorial do Portal de Dados Aberto:
      * https://dadosabertos.camara.leg.br/howtouse/2020-02-07-dados-votacoes.html
      */
-    async obterTodas(opcoes?: VotacaoOpcoes): Promise<DadosBasicosVotacao[]> {
-        const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
+    public static async obterTodas(opcoes?: VotacaoOpcoes): Promise<DadosBasicosVotacao[]> {
+        const url = this.#construirURL(`${this.#endpoint}?itens=100`, opcoes);
         const votacoes = await obter<DadosBasicosVotacao[], VotacoesURL>(url);
         if (Array.isArray(votacoes.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosVotacao>(votacoes.links);
@@ -58,12 +58,12 @@ export class Votacoes {
      * Para compreender melhor os dados retornados, veja o tutorial sobre votações do Portal de Dados Abertos:
      * https://dadosabertos.camara.leg.br/howtouse/2020-02-07-dados-votacoes.html
      */
-    async obterUma(idDaVotacao: string): Promise<Votacao> {
+    public static async obterUma(idDaVotacao: string): Promise<Votacao> {
         if (typeof idDaVotacao !== 'string') {
             throw new APIError(`${idDaVotacao} deveria ser uma string, mas é um(a) ${typeof idDaVotacao}`);
         };
 
-        const url: VotacoesURL = `${this.endpoint}/${idDaVotacao}`;
+        const url: VotacoesURL = `${this.#endpoint}/${idDaVotacao}`;
         const votacao = await obter<Votacao, VotacoesURL>(url);
         return votacao.dados;
     };
@@ -80,12 +80,12 @@ export class Votacoes {
      * 
      * Até o momento, só estão disponíveis dados sobre orientações dadas em votações no Plenário.
      */
-    async obterOrientacoes(idDaVotacao: string): Promise<OrientacoesDaVotacao[]> {
+    public static async obterOrientacoes(idDaVotacao: string): Promise<OrientacoesDaVotacao[]> {
         if (typeof idDaVotacao !== 'string') {
             throw new APIError(`${idDaVotacao} deveria ser uma string, mas é um(a) ${typeof idDaVotacao}`);
         };
 
-        const url: VotacoesURL = `${this.endpoint}/${idDaVotacao}/orientacoes`;
+        const url: VotacoesURL = `${this.#endpoint}/${idDaVotacao}/orientacoes`;
         const orientacoes = await obter<OrientacoesDaVotacao[], VotacoesURL>(url);
         if (Array.isArray(orientacoes.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<OrientacoesDaVotacao>(orientacoes.links);
@@ -110,12 +110,12 @@ export class Votacoes {
      * 
      * Não são listados parlamentares ausentes à votação.
      */
-    async obterVotos(idDaVotacao: string): Promise<Votos[]> {
+    public static async obterVotos(idDaVotacao: string): Promise<Votos[]> {
         if (typeof idDaVotacao !== 'string') {
             throw new APIError(`${idDaVotacao} deveria ser uma string, mas é um(a) ${typeof idDaVotacao}`);
         };
 
-        const url: VotacoesURL = `${this.endpoint}/${idDaVotacao}/votos`;
+        const url: VotacoesURL = `${this.#endpoint}/${idDaVotacao}/votos`;
         const votos = await obter<Votos[], VotacoesURL>(url);
         if (Array.isArray(votos.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<Votos>(votos.links);
@@ -127,7 +127,7 @@ export class Votacoes {
     };
 
     /** Constrói a URL com base nas opções fornecidas. */
-    #construirURL<T extends EndpointOpcoes<VotacoesOrdenarPor>>(url: VotacoesURL, opcoes?: T): VotacoesURL {
+    static #construirURL<T extends EndpointOpcoes<VotacoesOrdenarPor>>(url: VotacoesURL, opcoes?: T): VotacoesURL {
         if (!opcoes) return url;
 
         type OpcoesPossiveis = ReadonlyArray<VotacoesTodasOpcoes>;
@@ -169,7 +169,7 @@ export class Votacoes {
     };
 
     /** Obtém os dados da próxima página. */
-    async #obterDadosProximaPagina<T extends DadosDasVotacoes>(links: LinksNavegacao<VotacoesURL>): Promise<T[]> {
+    static async #obterDadosProximaPagina<T extends DadosDasVotacoes>(links: LinksNavegacao<VotacoesURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {

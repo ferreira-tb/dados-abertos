@@ -18,7 +18,7 @@ import type {
 
 export class Partidos {
     /** URL para o endpoint dos partidos. */
-    readonly endpoint: PartidosURL = 'https://dadosabertos.camara.leg.br/api/v2/partidos';
+    static readonly #endpoint: PartidosURL = 'https://dadosabertos.camara.leg.br/api/v2/partidos';
 
     /** 
      * Retorna uma lista de dados básicos sobre os partidos políticos que têm ou já tiveram deputados na Câmara.
@@ -30,8 +30,8 @@ export class Partidos {
      * 
      * Também se pode fazer busca por uma ou mais sigla(s), mas, em diferentes legislaturas, pode haver mais de um partido usando a mesma sigla.
      */
-    async obterTodos(opcoes?: PartidoOpcoes): Promise<DadosBasicosPartido[]> {
-        const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
+    public static async obterTodos(opcoes?: PartidoOpcoes): Promise<DadosBasicosPartido[]> {
+        const url = this.#construirURL(`${this.#endpoint}?itens=100`, opcoes);
         const partidos = await obter<DadosBasicosPartido[], PartidosURL>(url);
         if (Array.isArray(partidos.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosPartido>(partidos.links);
@@ -43,10 +43,10 @@ export class Partidos {
     };
 
     /** Retorna informações detalhadas sobre um partido. */
-    async obterUm(idDoPartido: number): Promise<Partido> {
+    public static async obterUm(idDoPartido: number): Promise<Partido> {
         idDoPartido = verificarInteiro(idDoPartido);
 
-        const url: PartidosURL = `${this.endpoint}/${idDoPartido.toString(10)}`;
+        const url: PartidosURL = `${this.#endpoint}/${idDoPartido.toString(10)}`;
         const partido = await obter<Partido, PartidosURL>(url);
         return partido.dados;
     };
@@ -55,10 +55,10 @@ export class Partidos {
      * Retorna uma lista de deputados que ocupam cargos de líder ou vice-líder do partido,
      * com a identificação do cargo e o período em que o tiveram.
      */
-    async obterLideres(idDoPartido: number): Promise<LideresDoPartido[]> {
+    public static async obterLideres(idDoPartido: number): Promise<LideresDoPartido[]> {
         idDoPartido = verificarInteiro(idDoPartido);
 
-        const url: PartidosURL = `${this.endpoint}/${idDoPartido.toString(10)}/lideres?itens=100`;
+        const url: PartidosURL = `${this.#endpoint}/${idDoPartido.toString(10)}/lideres?itens=100`;
         const lideres = await obter<LideresDoPartido[], PartidosURL>(url);
         if (Array.isArray(lideres.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<LideresDoPartido>(lideres.links);
@@ -76,10 +76,10 @@ export class Partidos {
      * 
      * PENDENTE: https://github.com/CamaraDosDeputados/dados-abertos/issues/324
      */
-    async obterMembros(idDoPartido: number, opcoes?: PartidoMembrosOpcoes): Promise<MembroDoPartido[]> {
+    public static async obterMembros(idDoPartido: number, opcoes?: PartidoMembrosOpcoes): Promise<MembroDoPartido[]> {
         idDoPartido = verificarInteiro(idDoPartido);
 
-        const urlBase: PartidosURL = `${this.endpoint}/${idDoPartido.toString(10)}/membros?itens=100`;
+        const urlBase: PartidosURL = `${this.#endpoint}/${idDoPartido.toString(10)}/membros?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
 
         const membros = await obter<MembroDoPartido[], PartidosURL>(url);
@@ -93,7 +93,7 @@ export class Partidos {
     };
 
     /** Constrói a URL com base nas opções fornecidas. */
-    #construirURL<T extends EndpointOpcoes<PartidosOrdenarPor>>(url: PartidosURL, opcoes?: T): PartidosURL {
+    static #construirURL<T extends EndpointOpcoes<PartidosOrdenarPor>>(url: PartidosURL, opcoes?: T): PartidosURL {
         if (!opcoes) return url;
 
         /** Chaves cujo valor devem ser strings. */
@@ -132,7 +132,7 @@ export class Partidos {
     };
 
     /** Obtém os dados da próxima página. */ 
-    async #obterDadosProximaPagina<T extends DadosDosPartidos>(links: LinksNavegacao<PartidosURL>): Promise<T[]> {
+    static async #obterDadosProximaPagina<T extends DadosDosPartidos>(links: LinksNavegacao<PartidosURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {

@@ -21,11 +21,11 @@ import type {
 
 export class Orgaos {
     /** URL para o endpoint das votações. */
-    readonly endpoint: OrgaosURL = 'https://dadosabertos.camara.leg.br/api/v2/orgaos';
+    static readonly #endpoint: OrgaosURL = 'https://dadosabertos.camara.leg.br/api/v2/orgaos';
 
     /** Retorna uma lista de informações básicas sobre os órgãos legislativos. */
-    async obterTodos(opcoes?: OrgaoOpcoes): Promise<DadosBasicosOrgao[]> {
-        const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
+    public static async obterTodos(opcoes?: OrgaoOpcoes): Promise<DadosBasicosOrgao[]> {
+        const url = this.#construirURL(`${this.#endpoint}?itens=100`, opcoes);
         const votacoes = await obter<DadosBasicosOrgao[], OrgaosURL>(url);
         if (Array.isArray(votacoes.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosOrgao>(votacoes.links);
@@ -37,10 +37,10 @@ export class Orgaos {
     };
 
     /** Retorna todas as informações disponíveis sobre o órgão. */
-    async obterUm(idDoOrgao: number): Promise<Orgao> {
+    public static async obterUm(idDoOrgao: number): Promise<Orgao> {
         idDoOrgao = verificarInteiro(idDoOrgao);
 
-        const url: OrgaosURL = `${this.endpoint}/${idDoOrgao.toString(10)}`;
+        const url: OrgaosURL = `${this.#endpoint}/${idDoOrgao.toString(10)}`;
         const orgao = await obter<Orgao, OrgaosURL>(url);
         return orgao.dados;
     };
@@ -51,10 +51,10 @@ export class Orgaos {
      * Por padrão, são retornados eventos em andamento ou previstos para o mesmo dia, dois dias antes e dois dias depois da requisição. 
      * Opções podem ser passadas para alterar esse período, bem como os tipos de eventos.
      */
-    async obterEventos(idDoOrgao: number, opcoes?: OrgaoEventoOpcoes): Promise<DadosBasicosEvento[]> {
+    public static async obterEventos(idDoOrgao: number, opcoes?: OrgaoEventoOpcoes): Promise<DadosBasicosEvento[]> {
         idDoOrgao = verificarInteiro(idDoOrgao);
 
-        const urlBase: OrgaosURL = `${this.endpoint}/${idDoOrgao.toString(10)}/eventos?itens=100`;
+        const urlBase: OrgaosURL = `${this.#endpoint}/${idDoOrgao.toString(10)}/eventos?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
 
         const eventos = await obter<DadosBasicosEvento[], OrgaosURL>(url);
@@ -74,10 +74,10 @@ export class Orgaos {
      * Se não forem passadas opções que delimitem esse período, o método retorna os membros do órgão
      * no momento da requisição. Se o órgão não existir mais ou não estiver instalado, é retornada uma lista vazia.
      */
-    async obterMembros(idDoOrgao: number, opcoes?: OrgaoMembroOpcoes): Promise<MembroDoOrgao[]> {
+    public static async obterMembros(idDoOrgao: number, opcoes?: OrgaoMembroOpcoes): Promise<MembroDoOrgao[]> {
         idDoOrgao = verificarInteiro(idDoOrgao);
 
-        const urlBase: OrgaosURL = `${this.endpoint}/${idDoOrgao.toString(10)}/membros?itens=100`;
+        const urlBase: OrgaosURL = `${this.#endpoint}/${idDoOrgao.toString(10)}/membros?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
 
         const membros = await obter<MembroDoOrgao[], OrgaosURL>(url);
@@ -105,10 +105,10 @@ export class Orgaos {
      * Para compreender melhor os dados sobre votações, veja a página de tutorial do Portal de Dados Abertos:
      * https://dadosabertos.camara.leg.br/howtouse/2020-02-07-dados-votacoes.html
      */
-    async obterVotacoes(idDoOrgao: number, opcoes?: OrgaoVotacaoOpcoes): Promise<DadosBasicosVotacao[]> {
+    public static async obterVotacoes(idDoOrgao: number, opcoes?: OrgaoVotacaoOpcoes): Promise<DadosBasicosVotacao[]> {
         idDoOrgao = verificarInteiro(idDoOrgao);
 
-        const urlBase: OrgaosURL = `${this.endpoint}/${idDoOrgao.toString(10)}/votacoes?itens=200`;
+        const urlBase: OrgaosURL = `${this.#endpoint}/${idDoOrgao.toString(10)}/votacoes?itens=200`;
         const url = this.#construirURL(urlBase, opcoes);
 
         const votacoes = await obter<DadosBasicosVotacao[], OrgaosURL>(url);
@@ -122,7 +122,7 @@ export class Orgaos {
     };
 
     /** Constrói a URL com base nas opções fornecidas. */
-    #construirURL<T extends EndpointOpcoes<OrgaosOrdenarPor>>(url: OrgaosURL, opcoes?: T): OrgaosURL {
+    static #construirURL<T extends EndpointOpcoes<OrgaosOrdenarPor>>(url: OrgaosURL, opcoes?: T): OrgaosURL {
         if (!opcoes) return url;
 
         type OpcoesPossiveis = ReadonlyArray<OrgaosTodasOpcoes>;
@@ -164,7 +164,7 @@ export class Orgaos {
     };
 
     /** Obtém os dados da próxima página. */
-    async #obterDadosProximaPagina<T extends DadosDosOrgaos>(links: LinksNavegacao<OrgaosURL>): Promise<T[]> {
+    static async #obterDadosProximaPagina<T extends DadosDosOrgaos>(links: LinksNavegacao<OrgaosURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {

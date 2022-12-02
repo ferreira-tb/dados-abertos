@@ -22,7 +22,7 @@ import type {
 
 export class Proposicoes {
     /** URL para o endpoint das proposições. */
-    readonly endpoint: ProposicoesURL = 'https://dadosabertos.camara.leg.br/api/v2/proposicoes';
+    static readonly #endpoint: ProposicoesURL = 'https://dadosabertos.camara.leg.br/api/v2/proposicoes';
 
     /**
      * Lista de informações básicas sobre projetos de lei, resoluções, medidas provisórias,
@@ -38,8 +38,8 @@ export class Proposicoes {
      * 
      * Se não forem, poderão ser listadas proposições que não tiveram tramitação recente (e a resposta pode demorar bastante).
      */
-    async obterTodas(opcoes?: ProposicaoOpcoes): Promise<DadosBasicosProposicao[]> {
-        const url = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
+    public static async obterTodas(opcoes?: ProposicaoOpcoes): Promise<DadosBasicosProposicao[]> {
+        const url = this.#construirURL(`${this.#endpoint}?itens=100`, opcoes);
         const proposicoes = await obter<DadosBasicosProposicao[], ProposicoesURL>(url);
         if (Array.isArray(proposicoes.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosProposicao>(proposicoes.links);
@@ -51,10 +51,10 @@ export class Proposicoes {
     };
 
     /** Informações detalhadas sobre uma proposição específica. */
-    async obterUma(idDaProposicao: number): Promise<Proposicao> {
+    public static async obterUma(idDaProposicao: number): Promise<Proposicao> {
         idDaProposicao = verificarInteiro(idDaProposicao);
 
-        const url: ProposicoesURL = `${this.endpoint}/${idDaProposicao.toString(10)}`;
+        const url: ProposicoesURL = `${this.#endpoint}/${idDaProposicao.toString(10)}`;
         const proposicao = await obter<Proposicao, ProposicoesURL>(url);
         return proposicao.dados;
     };
@@ -70,10 +70,10 @@ export class Proposicoes {
      * Para obter mais informações sobre cada autor, é recomendável acessar,
      * se disponível, a URL que é valor da propriedade `uri`.
      */
-    async obterAutores(idDaProposicao: number): Promise<AutorDaProposicao[]> {
+    public static async obterAutores(idDaProposicao: number): Promise<AutorDaProposicao[]> {
         idDaProposicao = verificarInteiro(idDaProposicao);
 
-        const url: ProposicoesURL = `${this.endpoint}/${idDaProposicao.toString(10)}/autores`;
+        const url: ProposicoesURL = `${this.#endpoint}/${idDaProposicao.toString(10)}/autores`;
         const autores = await obter<AutorDaProposicao[], ProposicoesURL>(url);
         if (Array.isArray(autores.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<AutorDaProposicao>(autores.links);
@@ -88,10 +88,10 @@ export class Proposicoes {
      * Lista de informações básicas sobre proposições que de alguma forma se relacionam com a proposição,
      * como pareceres, requerimentos, substitutivos, etc.
      */
-    async obterRelacionadas(idDaProposicao: number): Promise<ProposicaoRelacionada[]> {
+    public static async obterRelacionadas(idDaProposicao: number): Promise<ProposicaoRelacionada[]> {
         idDaProposicao = verificarInteiro(idDaProposicao);
 
-        const url: ProposicoesURL = `${this.endpoint}/${idDaProposicao.toString(10)}/relacionadas`;
+        const url: ProposicoesURL = `${this.#endpoint}/${idDaProposicao.toString(10)}/relacionadas`;
         const relacionadas = await obter<ProposicaoRelacionada[], ProposicoesURL>(url);
         if (Array.isArray(relacionadas.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<ProposicaoRelacionada>(relacionadas.links);
@@ -106,10 +106,10 @@ export class Proposicoes {
      * Lista em que cada item traz informações sobre uma área temática à qual a proposição se relaciona,
      * segundo classificação oficial do Centro de Documentação e Informação da Câmara.
      */
-    async obterTemas(idDaProposicao: number): Promise<TemaDaProposicao[]> {
+    public static async obterTemas(idDaProposicao: number): Promise<TemaDaProposicao[]> {
         idDaProposicao = verificarInteiro(idDaProposicao);
 
-        const url: ProposicoesURL = `${this.endpoint}/${idDaProposicao.toString(10)}/temas`;
+        const url: ProposicoesURL = `${this.#endpoint}/${idDaProposicao.toString(10)}/temas`;
         const temas = await obter<TemaDaProposicao[], ProposicoesURL>(url);
         if (Array.isArray(temas.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<TemaDaProposicao>(temas.links);
@@ -127,10 +127,10 @@ export class Proposicoes {
      * 
      * Esta representação das tramitações ainda é provisória.
      */
-    async obterTramitacoes(idDaProposicao: number, opcoes?: ProposicaoTramitacaoOpcoes): Promise<TramitacaoDaProposicao[]> {
+    public static async obterTramitacoes(idDaProposicao: number, opcoes?: ProposicaoTramitacaoOpcoes): Promise<TramitacaoDaProposicao[]> {
         idDaProposicao = verificarInteiro(idDaProposicao);
 
-        const urlBase: ProposicoesURL = `${this.endpoint}/${idDaProposicao.toString(10)}/tramitacoes`;
+        const urlBase: ProposicoesURL = `${this.#endpoint}/${idDaProposicao.toString(10)}/tramitacoes`;
         const url = this.#construirURL(urlBase, opcoes);
 
         const tramitacoes = await obter<TramitacaoDaProposicao[], ProposicoesURL>(url);
@@ -151,10 +151,10 @@ export class Proposicoes {
      * Para compreender melhor os dados sobre votações, veja a página de tutorial do Portal de Dados Abertos:
      * https://dadosabertos.camara.leg.br/howtouse/2020-02-07-dados-votacoes.html
      */
-    async obterVotacoes(idDaProposicao: number, opcoes?: ProposicaoVotacaoOpcoes): Promise<VotacaoDaProposicao[]> {
+    public static async obterVotacoes(idDaProposicao: number, opcoes?: ProposicaoVotacaoOpcoes): Promise<VotacaoDaProposicao[]> {
         idDaProposicao = verificarInteiro(idDaProposicao);
 
-        const urlBase: ProposicoesURL = `${this.endpoint}/${idDaProposicao.toString(10)}/votacoes`;
+        const urlBase: ProposicoesURL = `${this.#endpoint}/${idDaProposicao.toString(10)}/votacoes`;
         const url = this.#construirURL(urlBase, opcoes);
 
         const votacoes = await obter<VotacaoDaProposicao[], ProposicoesURL>(url);
@@ -168,7 +168,7 @@ export class Proposicoes {
     };
 
     /** Constrói a URL com base nas opções fornecidas. */
-    #construirURL<T extends EndpointOpcoes<ProposicoesOrdenarPor>>(url: ProposicoesURL, opcoes?: T): ProposicoesURL {
+    static #construirURL<T extends EndpointOpcoes<ProposicoesOrdenarPor>>(url: ProposicoesURL, opcoes?: T): ProposicoesURL {
         if (!opcoes) return url;
 
         type OpcoesPossiveis = ReadonlyArray<ProposicoesTodasOpcoes>;
@@ -224,7 +224,7 @@ export class Proposicoes {
     };
 
     /** Obtém os dados da próxima página. */ 
-    async #obterDadosProximaPagina<T extends DadosDasProposicoes>(links: LinksNavegacao<ProposicoesURL>): Promise<T[]> {
+    static async #obterDadosProximaPagina<T extends DadosDasProposicoes>(links: LinksNavegacao<ProposicoesURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {

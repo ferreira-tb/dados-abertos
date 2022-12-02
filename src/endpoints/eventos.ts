@@ -19,7 +19,7 @@ import type {
 
 export class Eventos {
     /** URL para o endpoint dos eventos. */
-    readonly endpoint: EventosURL = 'https://dadosabertos.camara.leg.br/api/v2/eventos';
+    static readonly #endpoint: EventosURL = 'https://dadosabertos.camara.leg.br/api/v2/eventos';
 
     /**
      * Retorna uma lista cujos elementos trazem informações básicas sobre eventos
@@ -29,8 +29,8 @@ export class Eventos {
      * Se nenhuma opção do tipo for passada, são listados eventos dos cinco dias anteriores,
      * dos cinco dias seguintes e do próprio dia em que é feita a requisição.
      */
-    async obterTodos(opcoes?: EventoOpcoes): Promise<DadosBasicosEvento[]> {
-        const url: EventosURL = this.#construirURL(`${this.endpoint}?itens=100`, opcoes);
+    public static async obterTodos(opcoes?: EventoOpcoes): Promise<DadosBasicosEvento[]> {
+        const url: EventosURL = this.#construirURL(`${this.#endpoint}?itens=100`, opcoes);
         const eventos = await obter<DadosBasicosEvento[], EventosURL>(url);
         if (Array.isArray(eventos.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosEvento>(eventos.links);
@@ -42,10 +42,10 @@ export class Eventos {
     };
 
     /** Retorna um conjunto detalhado de informações sobre o evento. */
-    async obterUm(idDoEvento: number): Promise<Evento> {
+    public static async obterUm(idDoEvento: number): Promise<Evento> {
         idDoEvento = verificarInteiro(idDoEvento);
 
-        const url: EventosURL = `${this.endpoint}/${idDoEvento.toString(10)}`;
+        const url: EventosURL = `${this.#endpoint}/${idDoEvento.toString(10)}`;
         const evento = await obter<Evento, EventosURL>(url);
         return evento.dados;
     };
@@ -57,10 +57,10 @@ export class Eventos {
      * Se o evento ainda não ocorreu, a lista mostra os deputados que devem participar do evento,
      * por serem convidados ou por serem membros dos órgãos responsáveis pelo evento.
      */
-    async obterDeputados(idDoEvento: number): Promise<DeputadosNoEvento[]> {
+    public static async obterDeputados(idDoEvento: number): Promise<DeputadosNoEvento[]> {
         idDoEvento = verificarInteiro(idDoEvento);
 
-        const url: EventosURL = `${this.endpoint}/${idDoEvento.toString(10)}/deputados`;
+        const url: EventosURL = `${this.#endpoint}/${idDoEvento.toString(10)}/deputados`;
         const deputados = await obter<DeputadosNoEvento[], EventosURL>(url);
         if (Array.isArray(deputados.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<DeputadosNoEvento>(deputados.links);
@@ -72,10 +72,10 @@ export class Eventos {
     };
 
     /** Retorna uma lista em que cada item é um conjunto mínimo de dados sobre os órgãos responsáveis pelo evento. */
-    async obterOrgaos(idDoEvento: number): Promise<OrgaosDoEvento[]> {
+    public static async obterOrgaos(idDoEvento: number): Promise<OrgaosDoEvento[]> {
         idDoEvento = verificarInteiro(idDoEvento);
 
-        const url: EventosURL = `${this.endpoint}/${idDoEvento.toString(10)}/orgaos`;
+        const url: EventosURL = `${this.#endpoint}/${idDoEvento.toString(10)}/orgaos`;
         const orgaos = await obter<OrgaosDoEvento[], EventosURL>(url);
         if (Array.isArray(orgaos.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<OrgaosDoEvento>(orgaos.links);
@@ -93,10 +93,10 @@ export class Eventos {
      * Cada item identifica, se as informações estiverem disponíveis, a proposição avaliada,
      * o regime de preferência para avaliação, o relator e seu parecer, o resultado da apreciação e a votação realizada.
      */
-    async obterPautas(idDoEvento: number): Promise<PautaDoEvento[]> {
+    public static async obterPautas(idDoEvento: number): Promise<PautaDoEvento[]> {
         idDoEvento = verificarInteiro(idDoEvento);
 
-        const url: EventosURL = `${this.endpoint}/${idDoEvento.toString(10)}/pauta`;
+        const url: EventosURL = `${this.#endpoint}/${idDoEvento.toString(10)}/pauta`;
         const pautas = await obter<PautaDoEvento[], EventosURL>(url);
         if (Array.isArray(pautas.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<PautaDoEvento>(pautas.links);
@@ -116,10 +116,10 @@ export class Eventos {
      * Para compreender melhor os dados sobre votações, veja a página de tutorial do Portal de Dados Abertos.
      * https://dadosabertos.camara.leg.br/howtouse/2020-02-07-dados-votacoes.html
      */
-    async obterVotacoes(idDoEvento: number): Promise<DadosBasicosVotacao[]> {
+    public static async obterVotacoes(idDoEvento: number): Promise<DadosBasicosVotacao[]> {
         idDoEvento = verificarInteiro(idDoEvento);
 
-        const url: EventosURL = `${this.endpoint}/${idDoEvento.toString(10)}/votacoes`;
+        const url: EventosURL = `${this.#endpoint}/${idDoEvento.toString(10)}/votacoes`;
         const votacoes = await obter<DadosBasicosVotacao[], EventosURL>(url);
         if (Array.isArray(votacoes.dados)) {
             const dadosExtras = await this.#obterDadosProximaPagina<DadosBasicosVotacao>(votacoes.links);
@@ -131,7 +131,7 @@ export class Eventos {
     };
 
     /** Constrói a URL com base nas opções fornecidas. */
-    #construirURL<T extends EndpointOpcoes<EventosOrdenarPor>>(url: EventosURL, opcoes?: T): EventosURL {
+    static #construirURL<T extends EndpointOpcoes<EventosOrdenarPor>>(url: EventosURL, opcoes?: T): EventosURL {
         if (!opcoes) return url;
 
         type OpcoesPossiveis = ReadonlyArray<EventosTodasOpcoes>;
@@ -170,7 +170,7 @@ export class Eventos {
     };
 
     /** Obtém os dados da próxima página. */
-    async #obterDadosProximaPagina<T extends DadosDosEventos>(links: LinksNavegacao<EventosURL>): Promise<T[]> {
+    static async #obterDadosProximaPagina<T extends DadosDosEventos>(links: LinksNavegacao<EventosURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {

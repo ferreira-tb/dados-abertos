@@ -14,7 +14,7 @@ import type {
 
 export class FrentesParlamentares {
     /** URL para o endpoint das frentes parlamentares. */
-    readonly endpoint: FrentesURL = 'https://dadosabertos.camara.leg.br/api/v2/frentes';
+    static readonly #endpoint: FrentesURL = 'https://dadosabertos.camara.leg.br/api/v2/frentes';
 
     /**
      * Retorna uma lista de informações sobre uma frente parlamentar,
@@ -26,8 +26,8 @@ export class FrentesParlamentares {
      * Uma array com um ou mais números de legislaturas pode ser passada como opção.
      * Se ela for omitida, a função retorna todas as frentes parlamentares criadas desde 2003.
      */
-    async obterTodas(opcoes?: FrenteOpcoes): Promise<DadosBasicosFrente[]> {
-        const url = this.#construirURL(this.endpoint, opcoes);
+    public static async obterTodas(opcoes?: FrenteOpcoes): Promise<DadosBasicosFrente[]> {
+        const url = this.#construirURL(this.#endpoint, opcoes);
 
         const frentes = await obter<DadosBasicosFrente[], FrentesURL>(url);
         if (Array.isArray(frentes.dados)) {
@@ -40,10 +40,10 @@ export class FrentesParlamentares {
     };
 
     /** Retorna informações detalhadas sobre uma frente parlamentar. */
-    async obterUma(idDaFrente: number): Promise<Frente> {
+    public static async obterUma(idDaFrente: number): Promise<Frente> {
         idDaFrente = verificarInteiro(idDaFrente);
 
-        const url: FrentesURL = `${this.endpoint}/${idDaFrente.toString(10)}`;
+        const url: FrentesURL = `${this.#endpoint}/${idDaFrente.toString(10)}`;
         const frente = await obter<Frente, FrentesURL>(url);
         return frente.dados;
     };
@@ -55,10 +55,10 @@ export class FrentesParlamentares {
      * Observe que, mesmo no caso de frentes parlamentares mistas (compostas por deputados e senadores),
      * são retornados apenas dados sobre os deputados.
      */
-    async obterMembros(idDaFrente: number): Promise<MembroDaFrente[]> {
+    public static async obterMembros(idDaFrente: number): Promise<MembroDaFrente[]> {
         idDaFrente = verificarInteiro(idDaFrente);
 
-        const url: FrentesURL = `${this.endpoint}/${idDaFrente.toString(10)}/membros`;
+        const url: FrentesURL = `${this.#endpoint}/${idDaFrente.toString(10)}/membros`;
         const membros = await obter<MembroDaFrente[], FrentesURL>(url);
 
         if (Array.isArray(membros.dados)) return membros.dados;
@@ -66,7 +66,7 @@ export class FrentesParlamentares {
     };
 
     /** Constrói a URL com base nas opções fornecidas. */
-    #construirURL(url: FrentesURL, opcoes?: FrenteOpcoes): FrentesURL {
+    static #construirURL(url: FrentesURL, opcoes?: FrenteOpcoes): FrentesURL {
         if (!opcoes) return url;
 
         for (const [key, value] of Object.entries(opcoes) as [FrentesTodasOpcoes, unknown][]) {
@@ -87,7 +87,7 @@ export class FrentesParlamentares {
     };
 
     /** Obtém os dados da próxima página. */ 
-    async #obterDadosProximaPagina<T extends DadosBasicosFrente>(links: LinksNavegacao<FrentesURL>): Promise<T[]> {
+    static async #obterDadosProximaPagina<T extends DadosBasicosFrente>(links: LinksNavegacao<FrentesURL>): Promise<T[]> {
         let dados: T[] = [];
         for (const link of links) {
             if (link.rel === 'next') {
@@ -113,7 +113,7 @@ export class FrentesParlamentares {
      * https://github.com/CamaraDosDeputados/dados-abertos/issues/326
      * @param link Link para a próxima página.
      */
-    #removerParametrosInvalidos(link: NavegacaoEntrePaginas<FrentesURL>['href']) {
+    static #removerParametrosInvalidos(link: NavegacaoEntrePaginas<FrentesURL>['href']) {
         if (!link.includes('itens')) return link;
         return link.replace('&itens=1000', '') as typeof link;
     };
