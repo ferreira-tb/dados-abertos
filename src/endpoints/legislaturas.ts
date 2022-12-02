@@ -1,4 +1,4 @@
-import { obter, verificarData, verificarID } from "../common/helpers.js";
+import { obter, verificarData, verificarInteiro } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
 import type {
@@ -41,7 +41,7 @@ export class Legislaturas {
 
     /** Retorna informações sobre uma determinada legislatura da Câmara. */
     async obterUma(idDaLegislatura: number): Promise<Legislatura> {
-        idDaLegislatura = verificarID(idDaLegislatura);
+        idDaLegislatura = verificarInteiro(idDaLegislatura);
 
         const url: LegislaturasURL = `${this.endpoint}/${idDaLegislatura.toString(10)}`;
         const legislatura = await obter<Legislatura, LegislaturasURL>(url);
@@ -54,7 +54,7 @@ export class Legislaturas {
      * o título de liderança exercido e o período de exercício do parlamentar nesta posição.
      */
     async obterLideres(idDaLegislatura: number): Promise<LideresDaLegislatura[]> {
-        idDaLegislatura = verificarID(idDaLegislatura);
+        idDaLegislatura = verificarInteiro(idDaLegislatura);
 
         const url: LegislaturasURL = `${this.endpoint}/${idDaLegislatura.toString(10)}/lideres?itens=100`;
         const lideres = await obter<LideresDaLegislatura[], LegislaturasURL>(url);
@@ -75,7 +75,7 @@ export class Legislaturas {
      * quatro secretários parlamentares e os suplentes dos secretários.
      */
     async obterMesa(idDaLegislatura: number, opcoes?: LegislaturaMesaOpcoes): Promise<MesaDaLegislatura> {
-        idDaLegislatura = verificarID(idDaLegislatura);
+        idDaLegislatura = verificarInteiro(idDaLegislatura);
 
         const urlBase: LegislaturasURL = `${this.endpoint}/${idDaLegislatura.toString(10)}/mesa`;
         const url = this.#construirURL(urlBase, opcoes);   
@@ -83,7 +83,7 @@ export class Legislaturas {
         return mesa.dados;
     };
 
-    /** Constrói a URL com base nos parâmetros fornecidos. */
+    /** Constrói a URL com base nas opções fornecidas. */
     #construirURL<T extends EndpointOpcoes<LegislaturasOrdenarPor>>(url: LegislaturasURL, opcoes?: T): LegislaturasURL {
         if (!opcoes) return url;
 
@@ -95,12 +95,13 @@ export class Legislaturas {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
                 for (const numero of value) {
-                    const id = verificarID(numero);
+                    const id = verificarInteiro(numero);
                     url += `&${key}=${id.toString(10)}`;
                 };
 
-            } else if ((key === 'data' || key === 'dataInicio' || key === 'dataFim') && verificarData(value)) {
-                url += `&${key}=${value}`;
+            } else if (key === 'data' || key === 'dataInicio' || key === 'dataFim') {
+                const data = verificarData(value);
+                url += `&${key}=${data}`;
 
             } else if (stringKeys.includes(key)) {
                 if (typeof value !== 'string') throw new APIError(`${key} deveria ser uma string, mas é um(a) ${typeof value}`);

@@ -1,5 +1,5 @@
 import { APIError } from "../error.js";
-import { obter, verificarID } from "../common/helpers.js";
+import { obter, verificarInteiro } from "../common/helpers.js";
 
 import type {
     BlocosURL,
@@ -23,7 +23,7 @@ export class BlocosPartidarios {
      * na legislatura seguinte, os mesmos partidos, se associados, formam um novo bloco.
      * 
      * A função retorna uma lista dos blocos em atividade no momento.
-     * Se forem passados números de legislaturas com o parâmetro `idLegislatura`,
+     * Se forem passados números de legislaturas com a opção `idLegislatura`,
      * são listados também os blocos formados e extintos nessas legislaturas.
      */
     async obterTodos(opcoes?: BlocoOpcoes): Promise<DadosBasicosBloco[]> {
@@ -41,14 +41,14 @@ export class BlocosPartidarios {
 
     /** Retorna informações sobre o bloco cujo ID corresponde ao fornecido. */
     async obterUm(idDoBloco: number): Promise<DadosBasicosBloco> {
-        idDoBloco = verificarID(idDoBloco);
+        idDoBloco = verificarInteiro(idDoBloco);
 
         const url: BlocosURL = `${this.endpoint}/${idDoBloco.toString(10)}`;
         const bloco = await obter<DadosBasicosBloco, BlocosURL>(url);
         return bloco.dados;
     };
 
-    /** Constrói a URL com base nos parâmetros fornecidos. */
+    /** Constrói a URL com base nas opções fornecidas. */
     #construirURL(url: BlocosURL, opcoes?: BlocoOpcoes): BlocosURL {
         if (!opcoes) return url;
 
@@ -60,7 +60,7 @@ export class BlocosPartidarios {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
                 for (const numero of value) {
-                    const id = verificarID(numero);
+                    const id = verificarInteiro(numero);
                     url += `&${key}=${id.toString(10)}`;
                 };
 

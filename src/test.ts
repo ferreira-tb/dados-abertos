@@ -1,9 +1,12 @@
 import * as fs from 'node:fs/promises';
-import { Votacoes } from './main.js';
+import { Orgaos } from './main.js';
 
-const votacoes = new Votacoes();
-const todas = await votacoes.obterTodas();
+const orgaos = new Orgaos();
+const agora = new Date();
+const antes = new Date(new Date().setMonth(0));
+fs.writeFile('test.json', JSON.stringify(await orgaos.obterVotacoes(4, { dataInicio: antes, dataFim: agora })));
 
+/*
 const ids: string[] = []
 for (const votacao of todas) {
     ids.push(votacao.id)
@@ -25,6 +28,4 @@ async function* obterVotos() {
 for await (const voto of obterVotos()) {
     if (!Array.isArray(voto)) continue;
     votos.push(voto);
-}
-
-fs.writeFile('test.json', JSON.stringify(votos));
+}*/

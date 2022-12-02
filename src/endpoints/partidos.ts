@@ -1,5 +1,5 @@
 import { APIError } from "../error.js";
-import { obter, verificarData, verificarID } from "../common/helpers.js";
+import { obter, verificarData, verificarInteiro } from "../common/helpers.js";
 
 import type {
     PartidosURL,
@@ -8,7 +8,7 @@ import type {
     Partido,
     LideresDoPartido,
     PartidoMembrosOpcoes,
-    MembrosDoPartido,
+    MembroDoPartido,
     EndpointOpcoes,
     PartidosOrdenarPor,
     PartidosTodasOpcoes,
@@ -23,7 +23,7 @@ export class Partidos {
     /** 
      * Retorna uma lista de dados básicos sobre os partidos políticos que têm ou já tiveram deputados na Câmara.
      * 
-     * Se não forem passados parâmetros, retorna os partidos que têm deputados em exercício no momento da requisição.
+     * Se não forem passadas opções, retorna os partidos que têm deputados em exercício no momento da requisição.
      * 
      * É possível obter uma lista de partidos representados na Câmara em um certo intervalo de datas ou de legislaturas.
      * Se um intervalo de uma ou mais legislatura(s) não coincidentes forem passados, todos os intervalos de tempo serão somados.
@@ -44,7 +44,7 @@ export class Partidos {
 
     /** Retorna informações detalhadas sobre um partido. */
     async obterUm(idDoPartido: number): Promise<Partido> {
-        idDoPartido = verificarID(idDoPartido);
+        idDoPartido = verificarInteiro(idDoPartido);
 
         const url: PartidosURL = `${this.endpoint}/${idDoPartido.toString(10)}`;
         const partido = await obter<Partido, PartidosURL>(url);
@@ -56,7 +56,7 @@ export class Partidos {
      * com a identificação do cargo e o período em que o tiveram.
      */
     async obterLideres(idDoPartido: number): Promise<LideresDoPartido[]> {
-        idDoPartido = verificarID(idDoPartido);
+        idDoPartido = verificarInteiro(idDoPartido);
 
         const url: PartidosURL = `${this.endpoint}/${idDoPartido.toString(10)}/lideres?itens=100`;
         const lideres = await obter<LideresDoPartido[], PartidosURL>(url);
@@ -71,20 +71,20 @@ export class Partidos {
 
     /**
      * Retorna uma lista de deputados que estão ou estiveram em exercício pelo partido.
-     * Opcionalmente, pode-se usar os parâmetros `dataInicio`, `dataFim` ou `idLegislatura`
+     * Opcionalmente, pode-se usar as opções `dataInicio`, `dataFim` ou `idLegislatura`
      * para se obter uma lista de deputados filiados ao partido num certo intervalo de tempo.
      * 
      * PENDENTE: https://github.com/CamaraDosDeputados/dados-abertos/issues/324
      */
-    async obterMembros(idDoPartido: number, opcoes?: PartidoMembrosOpcoes): Promise<MembrosDoPartido[]> {
-        idDoPartido = verificarID(idDoPartido);
+    async obterMembros(idDoPartido: number, opcoes?: PartidoMembrosOpcoes): Promise<MembroDoPartido[]> {
+        idDoPartido = verificarInteiro(idDoPartido);
 
         const urlBase: PartidosURL = `${this.endpoint}/${idDoPartido.toString(10)}/membros?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
 
-        const membros = await obter<MembrosDoPartido[], PartidosURL>(url);
+        const membros = await obter<MembroDoPartido[], PartidosURL>(url);
         if (Array.isArray(membros.dados)) {
-            const dadosExtras = await this.#obterDadosProximaPagina<MembrosDoPartido>(membros.links);
+            const dadosExtras = await this.#obterDadosProximaPagina<MembroDoPartido>(membros.links);
             if (dadosExtras.length > 0) membros.dados.push(...dadosExtras);
             return membros.dados;
         };
@@ -92,7 +92,7 @@ export class Partidos {
         return [];
     };
 
-    /** Constrói a URL com base nos parâmetros fornecidos. */
+    /** Constrói a URL com base nas opções fornecidas. */
     #construirURL<T extends EndpointOpcoes<PartidosOrdenarPor>>(url: PartidosURL, opcoes?: T): PartidosURL {
         if (!opcoes) return url;
 
@@ -107,14 +107,15 @@ export class Partidos {
                     if (typeof sigla === 'string') url += `&${key}=${sigla}`;
                 };
 
-            } else if ((key === 'dataInicio' || key === 'dataFim') && verificarData(value)) {
-                url += `&${key}=${value}`;
+            } else if (key === 'dataInicio' || key === 'dataFim') {
+                const data = verificarData(value);
+                url += `&${key}=${data}`;
 
             } else if (key === 'idLegislatura') {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
                 for (const numero of value) {
-                    const id = verificarID(numero);
+                    const id = verificarInteiro(numero);
                     url += `&${key}=${id.toString(10)}`;
                 };
 

@@ -1,4 +1,4 @@
-import { obter, verificarData, verificarHora, verificarID } from "../common/helpers.js";
+import { obter, verificarData, verificarHora, verificarInteiro } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
 import type {
@@ -25,8 +25,8 @@ export class Eventos {
      * Retorna uma lista cujos elementos trazem informações básicas sobre eventos
      * dos órgãos legislativos da Câmara, previstos ou já ocorridos, em um certo intervalo de tempo.
      * 
-     * Esse intervalo pode ser configurado por parâmetros de data e hora.
-     * Se nenhum parâmetro do tipo for passado, são listados eventos dos cinco dias anteriores,
+     * Esse intervalo pode ser configurado por opções de data e hora.
+     * Se nenhuma opção do tipo for passada, são listados eventos dos cinco dias anteriores,
      * dos cinco dias seguintes e do próprio dia em que é feita a requisição.
      */
     async obterTodos(opcoes?: EventoOpcoes): Promise<DadosBasicosEvento[]> {
@@ -43,7 +43,7 @@ export class Eventos {
 
     /** Retorna um conjunto detalhado de informações sobre o evento. */
     async obterUm(idDoEvento: number): Promise<Evento> {
-        idDoEvento = verificarID(idDoEvento);
+        idDoEvento = verificarInteiro(idDoEvento);
 
         const url: EventosURL = `${this.endpoint}/${idDoEvento.toString(10)}`;
         const evento = await obter<Evento, EventosURL>(url);
@@ -58,7 +58,7 @@ export class Eventos {
      * por serem convidados ou por serem membros dos órgãos responsáveis pelo evento.
      */
     async obterDeputados(idDoEvento: number): Promise<DeputadosNoEvento[]> {
-        idDoEvento = verificarID(idDoEvento);
+        idDoEvento = verificarInteiro(idDoEvento);
 
         const url: EventosURL = `${this.endpoint}/${idDoEvento.toString(10)}/deputados`;
         const deputados = await obter<DeputadosNoEvento[], EventosURL>(url);
@@ -73,7 +73,7 @@ export class Eventos {
 
     /** Retorna uma lista em que cada item é um conjunto mínimo de dados sobre os órgãos responsáveis pelo evento. */
     async obterOrgaos(idDoEvento: number): Promise<OrgaosDoEvento[]> {
-        idDoEvento = verificarID(idDoEvento);
+        idDoEvento = verificarInteiro(idDoEvento);
 
         const url: EventosURL = `${this.endpoint}/${idDoEvento.toString(10)}/orgaos`;
         const orgaos = await obter<OrgaosDoEvento[], EventosURL>(url);
@@ -94,7 +94,7 @@ export class Eventos {
      * o regime de preferência para avaliação, o relator e seu parecer, o resultado da apreciação e a votação realizada.
      */
     async obterPautas(idDoEvento: number): Promise<PautaDoEvento[]> {
-        idDoEvento = verificarID(idDoEvento);
+        idDoEvento = verificarInteiro(idDoEvento);
 
         const url: EventosURL = `${this.endpoint}/${idDoEvento.toString(10)}/pauta`;
         const pautas = await obter<PautaDoEvento[], EventosURL>(url);
@@ -117,7 +117,7 @@ export class Eventos {
      * https://dadosabertos.camara.leg.br/howtouse/2020-02-07-dados-votacoes.html
      */
     async obterVotacoes(idDoEvento: number): Promise<DadosBasicosVotacao[]> {
-        idDoEvento = verificarID(idDoEvento);
+        idDoEvento = verificarInteiro(idDoEvento);
 
         const url: EventosURL = `${this.endpoint}/${idDoEvento.toString(10)}/votacoes`;
         const votacoes = await obter<DadosBasicosVotacao[], EventosURL>(url);
@@ -130,7 +130,7 @@ export class Eventos {
         return [];
     };
 
-    /** Constrói a URL com base nos parâmetros fornecidos. */
+    /** Constrói a URL com base nas opções fornecidas. */
     #construirURL<T extends EndpointOpcoes<EventosOrdenarPor>>(url: EventosURL, opcoes?: T): EventosURL {
         if (!opcoes) return url;
 
@@ -145,15 +145,17 @@ export class Eventos {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
                 for (const numero of value) {
-                    const id = verificarID(numero);
+                    const id = verificarInteiro(numero);
                     url += `&${key}=${id.toString(10)}`;
                 };
 
-            } else if ((key === 'dataInicio' || key === 'dataFim') && verificarData(value)) {
-                url += `&${key}=${value}`;
+            } else if (key === 'dataInicio' || key === 'dataFim') {
+                const data = verificarData(value);
+                url += `&${key}=${data}`;
 
-            } else if ((key === 'horaInicio' || key === 'horaFim') && verificarHora(value)) {
-                url += `&${key}=${value}`;
+            } else if (key === 'horaInicio' || key === 'horaFim') {
+                const hora = verificarHora(value);
+                url += `&${key}=${hora}`;
 
             } else if (stringKeys.includes(key)) {
                 if (typeof value !== 'string') throw new APIError(`${key} deveria ser uma string, mas é um(a) ${typeof value}`);

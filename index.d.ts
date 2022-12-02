@@ -28,95 +28,6 @@ type UnidadeFederativa =
     | 'SE' // Sergipe
     | 'TO' // Tocantins
 
-export type LinksNavegacao<L> = ReadonlyArray<NavegacaoEntrePaginas<L>>;
-
-export type ResultadoBusca<D, L> = {
-    readonly dados: D
-    readonly links: LinksNavegacao<L>
-}
-
-export type NavegacaoEntrePaginas<L> = {
-    /** Relação com a página atual. */
-    readonly rel: 'first' | 'last' | 'next' | 'self'
-    /** Link para a nova página. */
-    readonly href: L
-}
-
-type Bancada = {
-    readonly tipo: string
-    readonly nome: string
-    readonly uri: PartidosURL | null
-}
-
-////// DADOS
-export type TodosDados = 
-    | DadosDosBlocos
-    | DadosDosDeputados
-    | DadosDosEventos
-    | DadosDasFrentes
-    | DadosDasLegislaturas
-    | DadosDosOrgaos
-    | DadosDosPartidos
-    | DadosDasProposicoes
-    | DadosDasVotacoes
-
-////// ORDENAR POR
-/** ID, nome e legislatura. */
-type OrdenarBlocos = 'id' | 'nome' | 'idLegislatura';
-/** ID, nome, legislatura, sigla da unidade federativa e sigla do partido. */
-type OrdenarDeputados = 'id' | 'nome' | 'idLegislatura' | 'siglaUf' | 'siglaPartido';
-/** Legislatura ou qualquer chave do objeto. */
-type OrdenarDeputadosDespesas = keyof DespesasDoDeputado | 'idLegislatura';
-/** Data e hora iniciais. */
-type OrdenarDeputadosDiscursos = 'dataHoraInicio';
-/** ID, data e hora iniciais e a sigla do órgão. */
-type OrdenarDeputadosEventos = 'id' | 'dataHoraInicio' | 'siglaOrgao';
-/** ID, sigla e nome do orgão, além do título e as datas de início e fim. */
-type OrdenarDeputadosOrgaos = 'dataInicio' | 'dataFim' | 'idOrgao' | 'siglaOrgao' | 'nomeOrgao' | 'titulo';
-/** ID, data e hora, descrição e título. */
-type OrdenarEventos = 'id' | 'dataHoraInicio' | 'dataHoraFim' | 'descricaoSituacao' | 'descricaoTipo' | 'titulo';
-/** Não há ordenação para as frentes parlamentares. */
-type OrdenarFrentes = never;
-/** ID da legislatura. */
-type OrdenarLegislaturas = 'id';
-/** ID, nome, sigla, data inicial e data final. */
-type OrdenarPartidos = 'id' | 'nome' | 'dataInicio' | 'dataFim' | 'sigla';
-/** ID, nome e sigla da unidade federativa. */
-type OrdenarPartidosMembros = 'id' | 'nome' | 'siglaUf';
-/** ID, código e sdo tipo da proposição, */
-type OrdenarProposicoes = 'id' | 'codTipo' | 'siglaTipo' | 'numero' | 'ano';
-/** ID e horário do registro. */
-type OrdenarProposicoesVotacao = 'id' | 'dataHoraRegistro';
-/** */
-type OrdenarVotacoes =
-    | 'id'
-    | 'idOrgao'
-    | 'siglaOrgao'
-    | 'idEvento'
-    | 'idProposicao'
-    | 'data'
-    | 'dataHoraRegistro '
-    | 'idProposicaoObjeto';
-
-// União dos tipos usados por diferentes partes de um mesmo endpoint.
-// Os tipos resultantes então são usados como constraint em alguns métodos.
-export type BlocosOrdenarPor = OrdenarBlocos;
-export type DeputadosOrdenarPor =
-    | OrdenarDeputados
-    | OrdenarDeputadosDespesas
-    | OrdenarDeputadosDiscursos
-    | OrdenarDeputadosEventos
-    | OrdenarDeputadosOrgaos;
-
-export type EventosOrdenarPor = OrdenarEventos;
-export type FrentesOrdenarPor = OrdenarFrentes;
-export type LegislaturasOrdenarPor = OrdenarLegislaturas;
-export type OrgaosOrdenarPor = '';
-export type PartidosOrdenarPor = OrdenarPartidos | OrdenarPartidosMembros;
-export type ProposicoesOrdenarPor = OrdenarProposicoes | OrdenarProposicoesVotacao;
-export type ReferenciasOrdenarPor = '';
-export type VotacoesOrdenarPor = OrdenarVotacoes;
-
 ////// ENDPOINTS
 export type CamaraEndpoints =
     | BlocosURL
@@ -157,12 +68,117 @@ export type ProposicoesURL = `${EndpointURLBase}/proposicoes${string}`;
 export type ReferenciasURL = `${EndpointURLBase}/referencias${string}`;
 export type VotacoesURL = `${EndpointURLBase}/votacoes${string}`;
 
+////// BUSCA
+export type LinksNavegacao<L> = ReadonlyArray<NavegacaoEntrePaginas<L>>;
+
+export type ResultadoBusca<D, L> = {
+    readonly dados: D
+    readonly links: LinksNavegacao<L>
+}
+
+export type NavegacaoEntrePaginas<L> = {
+    /** Relação com a página atual. */
+    readonly rel: 'first' | 'last' | 'next' | 'self'
+    /** Link para a nova página. */
+    readonly href: L
+}
+
+////// DADOS
+export type TodosDados = 
+    | DadosDosBlocos
+    | DadosDosDeputados
+    | DadosDosEventos
+    | DadosDasFrentes
+    | DadosDasLegislaturas
+    | DadosDosOrgaos
+    | DadosDosPartidos
+    | DadosDasProposicoes
+    | DadosDasVotacoes
+
+////// ORDENAR POR
+/** ID, nome e legislatura. */
+type OrdenarBlocos = 'id' | 'nome' | 'idLegislatura';
+/** ID, nome, legislatura, sigla da unidade federativa e sigla do partido. */
+type OrdenarDeputados = 'id' | 'nome' | 'idLegislatura' | 'siglaUf' | 'siglaPartido';
+/** Legislatura ou qualquer chave do objeto. */
+type OrdenarDeputadosDespesas = keyof DespesasDoDeputado | 'idLegislatura';
+/** Data e hora iniciais. */
+type OrdenarDeputadosDiscursos = 'dataHoraInicio';
+/** ID, data e hora iniciais e a sigla do órgão. */
+type OrdenarDeputadosEventos = 'id' | 'dataHoraInicio' | 'siglaOrgao';
+/** ID, sigla e nome do orgão, além do título e as datas de início e fim. */
+type OrdenarDeputadosOrgaos = 'dataInicio' | 'dataFim' | 'idOrgao' | 'siglaOrgao' | 'nomeOrgao' | 'titulo';
+/** ID, data e hora, descrição e título. */
+type OrdenarEventos = 'id' | 'dataHoraInicio' | 'dataHoraFim' | 'descricaoSituacao' | 'descricaoTipo' | 'titulo';
+/** Não há ordenação para as frentes parlamentares. */
+type OrdenarFrentes = never;
+/** ID da legislatura. */
+type OrdenarLegislaturas = 'id';
+/** ID, sigla, nome, apelido, tipo ou código do tipo do órgão, além da data. */
+type OrdenarOrgaos = 'id' | 'sigla' | 'nome' | 'apelido' | 'codTipoOrgao' | 'tipoOrgao' | 'dataInicio' | 'dataFim';
+/** ID, horários inicial e final, além da descriação do tipo de evento. */
+type OrdenarOrgaosEventos = 'id' | 'dataHoraInicio' | 'dataHoraFim' | 'descricaoTipo';
+/** ID da votação, do evento ou da proposição, sigla ou ID do orgão, além de data e horário de registro. */
+type OrdenarOrgaosVotacoes =
+    | 'id'
+    | 'idOrgao'
+    | 'siglaOrgao'
+    | 'idEvento'
+    | 'idProposicao'
+    | 'data'
+    | 'dataHoraRegistro'
+    | 'idProposicaoObjeto';
+
+/** ID, nome, sigla, data inicial e data final. */
+type OrdenarPartidos = 'id' | 'nome' | 'dataInicio' | 'dataFim' | 'sigla';
+/** ID, nome e sigla da unidade federativa. */
+type OrdenarPartidosMembros = 'id' | 'nome' | 'siglaUf';
+/** ID, código e sdo tipo da proposição, */
+type OrdenarProposicoes = 'id' | 'codTipo' | 'siglaTipo' | 'numero' | 'ano';
+/** ID e horário do registro. */
+type OrdenarProposicoesVotacao = 'id' | 'dataHoraRegistro';
+/** Diferentes tipos de ID, sigla do orgão, data e hora.*/
+type OrdenarVotacoes =
+    | 'id'
+    | 'idOrgao'
+    | 'siglaOrgao'
+    | 'idEvento'
+    | 'idProposicao'
+    | 'data'
+    | 'dataHoraRegistro '
+    | 'idProposicaoObjeto';
+
+// União dos tipos usados por diferentes partes de um mesmo endpoint.
+// Os tipos resultantes então são usados como constraint em alguns métodos.
+export type BlocosOrdenarPor = OrdenarBlocos;
+export type DeputadosOrdenarPor =
+    | OrdenarDeputados
+    | OrdenarDeputadosDespesas
+    | OrdenarDeputadosDiscursos
+    | OrdenarDeputadosEventos
+    | OrdenarDeputadosOrgaos;
+
+export type EventosOrdenarPor = OrdenarEventos;
+export type FrentesOrdenarPor = OrdenarFrentes;
+export type LegislaturasOrdenarPor = OrdenarLegislaturas;
+export type OrgaosOrdenarPor = OrdenarOrgaos | OrdenarOrgaosEventos | OrdenarOrgaosVotacoes;
+export type PartidosOrdenarPor = OrdenarPartidos | OrdenarPartidosMembros;
+export type ProposicoesOrdenarPor = OrdenarProposicoes | OrdenarProposicoesVotacao;
+export type ReferenciasOrdenarPor = '';
+export type VotacoesOrdenarPor = OrdenarVotacoes;
+
 ////// OPÇÕES
 export type EndpointOpcoes<O> = {
-    /** Data de início de um intervalo de tempo, no formato `AAAA-MM-DD`. */
-    dataInicio?: string
-    /** Data de término de um intervalo de tempo, no formato `AAAA-MM-DD`. */
-    dataFim?: string
+    /**
+     * Data de início de um intervalo de tempo, no formato `AAAA-MM-DD`.
+     * Se um objeto `Date` for fornecido, ele será convertido para o formato correto automaticamente.
+     */
+    dataInicio?: string | Date
+    /**
+     * Data de término de um intervalo de tempo, no formato `AAAA-MM-DD`.
+     * Se um objeto `Date` for fornecido, ele será convertido para o formato correto automaticamente.
+     */
+    dataFim?: string | Date
     /** Número das legislaturas às quais os dados buscados devem corresponder. */
     idLegislatura?: number[]
     /** O sentido da ordenação: `asc` para A a Z ou 0 a 9, e `desc` para Z a A ou 9 a 0. */
@@ -172,15 +188,11 @@ export type EndpointOpcoes<O> = {
 }
 
 export type BlocosTodasOpcoes = keyof BlocoOpcoes;
-export type DeputadosTodasOpcoes = 
-    | keyof DeputadoOpcoes
-    | keyof DeputadoDespesasOpcoes
-    | keyof DeputadoDiscursosOpcoes;
-
+export type DeputadosTodasOpcoes = keyof DeputadoOpcoes | keyof DeputadoDespesasOpcoes | keyof DeputadoDiscursosOpcoes;
 export type EventosTodasOpcoes = keyof EventoOpcoes;
 export type FrentesTodasOpcoes = keyof FrenteOpcoes;
 export type LegislaturasTodasOpcoes = keyof LegislaturaOpcoes | keyof LegislaturaMesaOpcoes;
-export type OrgaosTodasOpcoes = never;
+export type OrgaosTodasOpcoes = keyof OrgaoOpcoes | keyof OrgaoEventoOpcoes | keyof OrgaoMembroOpcoes | keyof OrgaoVotacaoOpcoes;
 export type PartidosTodasOpcoes = keyof PartidoOpcoes;
 export type ProposicoesTodasOpcoes = keyof ProposicaoOpcoes | keyof ProposicaoTramitacaoOpcoes;
 export type ReferenciasTodasOpcoes = never;
@@ -257,8 +269,8 @@ export type DeputadoEventosOpcoes = Omit<EndpointOpcoes<OrdenarDeputadosEventos>
 export type DeputadoOrgaosOpcoes = Omit<EndpointOpcoes<OrdenarDeputadosOrgaos>, 'idLegislatura'>;
 
 // Interfaces que dependem dessa:
-// CoordenadorDaFrente, DeputadosNoEvento, LideresDaLegislatura,
-// MembrosDoPartido, MesaDaLegislatura, PautaDoEvento, StatusDoDeputado.
+// CoordenadorDaFrente, DeputadosNoEvento, LideresDaLegislatura, MembroDoOrgao,
+// MembroDoPartido, MesaDaLegislatura, PautaDoEvento, StatusDoDeputado.
 export type DadosBasicosDeputado = {
     readonly id: number
     readonly uri: DeputadosURL
@@ -435,10 +447,18 @@ export interface EventoOpcoes extends Omit<EndpointOpcoes<OrdenarEventos>, 'idLe
     codTipoOrgao?: number[]
     /** ID dos órgãos. */
     idOrgao?: number[]
-    /** Hora inicial, no formato `HH:MM`. */
-    horaInicio?: string
-    /** Hora de término, no formato `HH:MM`. */
-    horaFim?: string
+    /**
+     * Hora inicial, no formato `HH:MM`.
+     * 
+     * Se um objeto `Date` for fornecido, ele será convertido para o formato correto automaticamente.
+     */
+    horaInicio?: string | Date
+    /**
+     * Hora de término, no formato `HH:MM`.
+     * 
+     * Se um objeto `Date` for fornecido, ele será convertido para o formato correto automaticamente.
+     */
+    horaFim?: string | Date
 }
 
 /** Deputados participantes de um evento específico. */
@@ -549,10 +569,12 @@ export type Legislatura = DadosBasicosLegislatura;
 
 export interface LegislaturaOpcoes extends Pick<EndpointOpcoes<OrdenarLegislaturas>, 'ordem' | 'ordenarPor'> {
     /**
-     * Data no formato `AAAA-MM-DD`. Se este parâmetro estiver presente,
+     * Data no formato `AAAA-MM-DD`. Se esta opção estiver presente,
      * a requisição retornará as informações básicas sobre a legislatura em curso na data fornecida.
+     * 
+     * Se um objeto `Date` for fornecido, ele será convertido para o formato correto automaticamente.
      */
-    data?: string;
+    data?: string | Date;
     /** ID de uma ou mais legislaturas. */
     id?: number[]
 }
@@ -578,6 +600,9 @@ export interface MesaDaLegislatura extends DadosBasicosDeputado {
 export type DadosDosOrgaos =
     | DadosBasicosOrgao
     | Orgao
+    | DadosBasicosEvento
+    | MembroDoOrgao
+    | DadosBasicosVotacao
 
 // Interfaces que dependem dessa:
 // DadosBasicosEvento, EventosDoDeputado, OrgaosDoEvento.
@@ -589,7 +614,7 @@ export type DadosBasicosOrgao = {
     readonly apelido: string
     readonly codTipoOrgao: number
     readonly tipoOrgao: string
-    readonly nomePublicacao: string
+    readonly nomePublicacao: string | null
     readonly nomeResumido: string | null 
 }
 
@@ -604,12 +629,61 @@ export interface Orgao extends DadosBasicosOrgao {
     readonly urlWebsite: string | null
 }
 
+export interface OrgaoOpcoes extends Omit<EndpointOpcoes<OrdenarOrgaos>, 'idLegislatura'> {
+    /** ID de um ou mais órgãos. */
+    id?: number[]
+    /** Uma ou mais siglas oficialmente usadas para designar órgãos da Câmara. */
+    sigla?: string[]
+    /** Códigos dos tipos de órgãos. */
+    codTipoOrgao?: number[]
+}
+
+export interface OrgaoEventoOpcoes extends Omit<EndpointOpcoes<OrdenarOrgaosEventos>, 'idLegislatura'> {
+    /** ID dos tipos de evento. */
+    idTipoEvento?: number[]
+}
+
+export interface MembroDoOrgao extends DadosBasicosDeputado {
+    readonly titulo: string
+    readonly codTitulo: number
+    readonly dataInicio: string
+    readonly dataFim: string | null
+}
+
+export type OrgaoMembroOpcoes = Pick<EndpointOpcoes<never>, 'dataInicio' | 'dataFim'>;
+
+export interface OrgaoVotacaoOpcoes extends Pick<EndpointOpcoes<OrdenarOrgaosVotacoes>, 'ordem' | 'ordenarPor'> {
+    /**
+     * ID de uma ou mais proposições. Se presente, listará as votações que tiveram as
+     * proposições como objeto de votação ou que afetaram as proposições listadas.
+     */
+    idProposicao?: number[]
+    /**
+     * Data em formato `AAAA-MM-DD` para início do intervalo de tempo no qual tenham sido realizadas as votações a serem listadas.
+     * 
+     * Se usada sozinha, essa opção faz com que sejam retornadas votações ocorridas dessa data até o fim do mesmo ano.
+     * Se usada com `dataFim`, as duas datas devem ser de um mesmo ano.
+     * 
+     * Caso um objeto `Date` seja fornecido, ele será convertido para o formato correto automaticamente.
+     */
+    dataInicio?: string | Date
+    /**
+     * Data em formato `AAAA-MM-DD` que define o fim do intervalo de tempo no qual tenham sido realizadas as votações a serem listadas.
+     * 
+     * Se usada sozinha, essa opção faz com que sejam retornadas todas as votações ocorridas desde 1º de janeiro do mesmo ano
+     * até esta data. Se usada com `dataInicio`, é preciso que as duas datas sejam de um mesmo ano.
+     * 
+     * Caso um objeto `Date` seja fornecido, ele será convertido para o formato correto automaticamente.
+     */
+    dataFim?: string | Date
+}
+
 ////// PARTIDOS
 export type DadosDosPartidos =
     | DadosBasicosPartido
     | Partido
     | LideresDoPartido
-    | MembrosDoPartido
+    | MembroDoPartido
 
 export interface PartidoOpcoes extends EndpointOpcoes<OrdenarPartidos> {
     /** Sigla de um ou mais partidos. */
@@ -657,9 +731,9 @@ type LiderDoPartido = {
     readonly urlFoto: string
 }
 
-export type MembrosDoPartido = DadosBasicosDeputado;
+export type MembroDoPartido = DadosBasicosDeputado;
 
-export interface LideresDoPartido extends MembrosDoPartido {
+export interface LideresDoPartido extends MembroDoPartido {
     readonly titulo: string
     readonly codTitulo: number
     readonly dataInicio: string
@@ -744,13 +818,17 @@ export interface ProposicaoOpcoes extends Omit<EndpointOpcoes<OrdenarProposicoes
     /**
      * Data do início do intervalo de tempo em que tenham sido apresentadas
      * as proposições a serem listadas, no formato `AAAA-MM-DD`.
+     * 
+     * Se um objeto `Date` for fornecido, ele será convertido para o formato correto automaticamente.
      */
-    dataApresentacaoInicio?: string
+    dataApresentacaoInicio?: string | Date
     /**
      * Data do fim do intervalo de tempo em que tenham sido apresentadas
      * as proposições a serem listadas, no formato `AAAA-MM-DD`.
+     * 
+     * Se um objeto `Date` for fornecido, ele será convertido para o formato correto automaticamente.
      */
-    dataApresentacaoFim?: string
+    dataApresentacaoFim?: string | Date
     /**
      * Códigos numéricos do tipo de situação em que se encontram as proposições que serão listadas.
      * 
@@ -806,7 +884,12 @@ export type DadosDasVotacoes =
     | OrientacoesDaVotacao
     | Votos
 
-/** Usado diretamente nos métodos `Eventos.prototype.obterVotacoes()` e `Proposicoes.prototype.obterVotacoes()`. */
+/**
+ * Usado diretamente nos métodos:
+ * `Eventos.prototype.obterVotacoes()`,
+ * `Proposicoes.prototype.obterVotacoes()` e
+ * `Orgaos.prototype.obterVotacoes()`.
+ */
 export type DadosBasicosVotacao = {
     readonly id: string
     readonly uri: VotacoesURL

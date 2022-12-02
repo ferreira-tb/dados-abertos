@@ -1,4 +1,4 @@
-import { obter, verificarID } from "../common/helpers.js";
+import { obter, verificarInteiro } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
 import type {
@@ -20,12 +20,11 @@ export class FrentesParlamentares {
      * Retorna uma lista de informações sobre uma frente parlamentar,
      * que é um agrupamento oficial de parlamentares em torno de um determinado tema ou proposta.
      * 
-     * As frentes existem até o fim da legislatura em que foram criadas,
-     * e podem ser recriadas a cada legislatura.
+     * As frentes existem até o fim da legislatura em que foram criadas, e podem ser recriadas a cada legislatura.
      * Algumas delas são compostas por deputados e senadores.
      * 
-     * Uma array com um ou mais números de legislaturas pode ser passada como parâmetro.
-     * Se ela for omitida, a função retornada todas as frentes parlamentares criadas desde 2003.
+     * Uma array com um ou mais números de legislaturas pode ser passada como opção.
+     * Se ela for omitida, a função retorna todas as frentes parlamentares criadas desde 2003.
      */
     async obterTodas(opcoes?: FrenteOpcoes): Promise<DadosBasicosFrente[]> {
         const url = this.#construirURL(this.endpoint, opcoes);
@@ -42,7 +41,7 @@ export class FrentesParlamentares {
 
     /** Retorna informações detalhadas sobre uma frente parlamentar. */
     async obterUma(idDaFrente: number): Promise<Frente> {
-        idDaFrente = verificarID(idDaFrente);
+        idDaFrente = verificarInteiro(idDaFrente);
 
         const url: FrentesURL = `${this.endpoint}/${idDaFrente.toString(10)}`;
         const frente = await obter<Frente, FrentesURL>(url);
@@ -57,7 +56,7 @@ export class FrentesParlamentares {
      * são retornados apenas dados sobre os deputados.
      */
     async obterMembros(idDaFrente: number): Promise<MembroDaFrente[]> {
-        idDaFrente = verificarID(idDaFrente);
+        idDaFrente = verificarInteiro(idDaFrente);
 
         const url: FrentesURL = `${this.endpoint}/${idDaFrente.toString(10)}/membros`;
         const membros = await obter<MembroDaFrente[], FrentesURL>(url);
@@ -66,7 +65,7 @@ export class FrentesParlamentares {
         return [];
     };
 
-    /** Constrói a URL com base nos parâmetros fornecidos. */
+    /** Constrói a URL com base nas opções fornecidas. */
     #construirURL(url: FrentesURL, opcoes?: FrenteOpcoes): FrentesURL {
         if (!opcoes) return url;
 
@@ -75,7 +74,7 @@ export class FrentesParlamentares {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
                 for (const numero of value) {
-                    const id = verificarID(numero);
+                    const id = verificarInteiro(numero);
                     url += `&${key}=${id.toString(10)}`;
                 };
 

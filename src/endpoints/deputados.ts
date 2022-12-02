@@ -1,4 +1,4 @@
-import { obter, verificarData, verificarID } from "../common/helpers.js";
+import { obter, verificarData, verificarInteiro } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
 import type {
@@ -31,7 +31,7 @@ export class Deputados {
      * Retorna uma lista de dados básicos sobre deputados que estiveram
      * em exercício parlamentar em algum intervalo de tempo.
      * 
-     * Se não for passado um parâmetro de tempo, como `idLegislatura` ou `dataInicio`,
+     * Se não for passada uma opção de tempo, como `idLegislatura` ou `dataInicio`,
      * a lista enumerará somente os deputados em exercício no momento da requisição.
      */
     async obterTodos(opcoes?: DeputadoOpcoes): Promise<DadosBasicosDeputado[]> {
@@ -51,7 +51,7 @@ export class Deputados {
      * em algum momento da história e por qualquer período, entrou em exercício na Câmara.
      */
     async obterUm(idDoDeputado: number): Promise<Deputado> {
-        idDoDeputado = verificarID(idDoDeputado);
+        idDoDeputado = verificarInteiro(idDoDeputado);
 
         const url: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}`;
         const deputado = await obter<Deputado, DeputadosURL>(url);
@@ -63,10 +63,10 @@ export class Deputados {
      * a título da Cota para Exercício da Atividade Parlamentar, a chamada "cota parlamentar".
      * 
      * A lista pode ser filtrada por mês, ano, legislatura, CNPJ ou CPF de um fornecedor.
-     * Se não forem passados os parâmetros de tempo, o método retorna os dados dos seis meses anteriores à requisição.
+     * Se não forem passadas as opções de tempo, o método retorna os dados dos seis meses anteriores à requisição.
      */
     async obterDespesas(idDoDeputado: number, opcoes?: DeputadoDespesasOpcoes): Promise<DespesasDoDeputado[]> {
-        idDoDeputado = verificarID(idDoDeputado);
+        idDoDeputado = verificarInteiro(idDoDeputado);
 
         const urlBase: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/despesas?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
@@ -85,11 +85,11 @@ export class Deputados {
      * Retorna uma lista de informações sobre os pronunciamentos feitos pelo deputado
      * que tenham sido registrados, em quaisquer eventos, nos sistemas da Câmara.
      * 
-     * Caso os parâmetros de tempo (`dataInicio`, `dataFim` e `idLegislatura`) não sejam configurados na requisição,
+     * Caso as opções de tempo (`dataInicio`, `dataFim` e `idLegislatura`) não sejam configuradas na requisição,
      * são buscados os discursos ocorridos nos sete dias anteriores ao da requisição.
      */
     async obterDiscursos(idDoDeputado: number, opcoes?: DeputadoDiscursosOpcoes): Promise<DiscursosDoDeputado[]> {
-        idDoDeputado = verificarID(idDoDeputado);
+        idDoDeputado = verificarInteiro(idDoDeputado);
 
         const urlBase: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/discursos?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
@@ -108,13 +108,13 @@ export class Deputados {
      * Retorna uma lista de eventos nos quais a participação do parlamentar era ou é prevista.
      * 
      * Um período de tempo pode ser delimitado para a busca.
-     * Se não forem passados parâmetros de tempo, são retornados os eventos num período de cinco dias,
+     * Se não forem passadas opções de tempo, são retornados os eventos num período de cinco dias,
      * sendo dois antes e dois depois do dia da requisição.
      * 
      * Os itens podem ser ordenados por `id`, `siglaOrgao` ou `dataHoraInicio`.
      */
     async obterEventos(idDoDeputado: number, opcoes?: DeputadoEventosOpcoes): Promise<EventosDoDeputado[]> {
-        idDoDeputado = verificarID(idDoDeputado);
+        idDoDeputado = verificarInteiro(idDoDeputado);
 
         const urlBase: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/eventos?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
@@ -135,7 +135,7 @@ export class Deputados {
      * tenha encerrado a legislatura como integrante.
      */
     async obterFrentes(idDoDeputado: number): Promise<FrentesDoDeputado[]> {
-        idDoDeputado = verificarID(idDoDeputado);
+        idDoDeputado = verificarInteiro(idDoDeputado);
 
         const url: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/frentes`;
         const eventos = await obter<FrentesDoDeputado[], DeputadosURL>(url);
@@ -153,7 +153,7 @@ export class Deputados {
      * já teve em sua carreira e declarou à Câmara dos Deputados.
      */
     async obterOcupacoes(idDoDeputado: number): Promise<OcupacoesDoDeputado[]> {
-        idDoDeputado = verificarID(idDoDeputado);
+        idDoDeputado = verificarInteiro(idDoDeputado);
 
         const url: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/ocupacoes`;
         const eventos = await obter<OcupacoesDoDeputado[], DeputadosURL>(url);
@@ -174,12 +174,12 @@ export class Deputados {
      * neste órgão (como presidente, vice-presidente, titular ou suplente)
      * e as datas de início e fim da ocupação deste cargo.
      * 
-     * Se não for passado algum parâmetro de tempo, são retornados os
+     * Se não for passada alguma opção de tempo, são retornados os
      * órgãos ocupados pelo parlamentar no momento da requisição.
      * Neste caso a lista será vazia se o deputado não estiver em exercício.
      */
     async obterOrgaos(idDoDeputado: number, opcoes?: DeputadoOrgaosOpcoes): Promise<OrgaosDoDeputado[]> {
-        idDoDeputado = verificarID(idDoDeputado);
+        idDoDeputado = verificarInteiro(idDoDeputado);
 
         const urlBase: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/orgaos?itens=100`;
         const url = this.#construirURL(urlBase, opcoes);
@@ -199,7 +199,7 @@ export class Deputados {
      * que já exerceu ou que pode exercer pela sua formação e/ou experiência.
      */
     async obterProfissoes(idDoDeputado: number): Promise<ProfissoesDoDeputado[]> {
-        idDoDeputado = verificarID(idDoDeputado);
+        idDoDeputado = verificarInteiro(idDoDeputado);
 
         const url: DeputadosURL = `${this.endpoint}/${idDoDeputado.toString(10)}/profissoes`;
         const eventos = await obter<ProfissoesDoDeputado[], DeputadosURL>(url);
@@ -212,7 +212,7 @@ export class Deputados {
         return [];
     };
 
-    /** Constrói a URL com base nos parâmetros fornecidos. */
+    /** Constrói a URL com base nas opções fornecidas. */
     #construirURL<T extends EndpointOpcoes<DeputadosOrdenarPor>>(url: DeputadosURL, opcoes?: T): DeputadosURL {
         if (!opcoes) return url;
 
@@ -227,7 +227,7 @@ export class Deputados {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
                 for (const numero of value) {
-                    const id = verificarID(numero);
+                    const id = verificarInteiro(numero);
                     url += `&${key}=${id.toString(10)}`;
                 };
 
@@ -238,8 +238,9 @@ export class Deputados {
                     if (typeof sigla === 'string') url += `&${key}=${sigla}`;
                 };
 
-            } else if ((key === 'dataInicio' || key === 'dataFim') && verificarData(value)) {
-                url += `&${key}=${value}`;
+            } else if (key === 'dataInicio' || key === 'dataFim') {
+                const data = verificarData(value);
+                url += `&${key}=${data}`;
 
             } else if (stringKeys.includes(key)) {
                 if (typeof value !== 'string') throw new APIError(`${key} deveria ser uma string, mas é um(a) ${typeof value}`);

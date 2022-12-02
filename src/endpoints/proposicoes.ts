@@ -1,4 +1,4 @@
-import { obter, verificarData, verificarID } from "../common/helpers.js";
+import { obter, verificarData, verificarInteiro } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
 import type {
@@ -34,7 +34,7 @@ export class Proposicoes {
      * 
      * Considere as seguintes opções: `id`, `ano`, `dataApresentacaoInicio`, `dataApresentacaoFim`,
      * `idAutor` e `autor`. Se algumas dessas opções forem passadas, o intervalo de tramitação só será levado
-     * em consideração se os parâmetros `dataInicio` e/ou `dataFim` estiverem explicitamente configurados.
+     * em consideração se as opções `dataInicio` e/ou `dataFim` estiverem explicitamente configuradas.
      * 
      * Se não forem, poderão ser listadas proposições que não tiveram tramitação recente (e a resposta pode demorar bastante).
      */
@@ -52,7 +52,7 @@ export class Proposicoes {
 
     /** Informações detalhadas sobre uma proposição específica. */
     async obterUma(idDaProposicao: number): Promise<Proposicao> {
-        idDaProposicao = verificarID(idDaProposicao);
+        idDaProposicao = verificarInteiro(idDaProposicao);
 
         const url: ProposicoesURL = `${this.endpoint}/${idDaProposicao.toString(10)}`;
         const proposicao = await obter<Proposicao, ProposicoesURL>(url);
@@ -67,10 +67,11 @@ export class Proposicoes {
      * Pelo Regimento da Câmara, todos os que assinam uma proposição são considerados
      * autores (art. 102), tanto os proponentes quanto os apoiadores.
      * 
-     * Para obter mais informações sobre cada autor, é recomendável acessar, se disponível, a URL que é valor da propriedade `uri`.
+     * Para obter mais informações sobre cada autor, é recomendável acessar,
+     * se disponível, a URL que é valor da propriedade `uri`.
      */
     async obterAutores(idDaProposicao: number): Promise<AutorDaProposicao[]> {
-        idDaProposicao = verificarID(idDaProposicao);
+        idDaProposicao = verificarInteiro(idDaProposicao);
 
         const url: ProposicoesURL = `${this.endpoint}/${idDaProposicao.toString(10)}/autores`;
         const autores = await obter<AutorDaProposicao[], ProposicoesURL>(url);
@@ -88,7 +89,7 @@ export class Proposicoes {
      * como pareceres, requerimentos, substitutivos, etc.
      */
     async obterRelacionadas(idDaProposicao: number): Promise<ProposicaoRelacionada[]> {
-        idDaProposicao = verificarID(idDaProposicao);
+        idDaProposicao = verificarInteiro(idDaProposicao);
 
         const url: ProposicoesURL = `${this.endpoint}/${idDaProposicao.toString(10)}/relacionadas`;
         const relacionadas = await obter<ProposicaoRelacionada[], ProposicoesURL>(url);
@@ -106,7 +107,7 @@ export class Proposicoes {
      * segundo classificação oficial do Centro de Documentação e Informação da Câmara.
      */
     async obterTemas(idDaProposicao: number): Promise<TemaDaProposicao[]> {
-        idDaProposicao = verificarID(idDaProposicao);
+        idDaProposicao = verificarInteiro(idDaProposicao);
 
         const url: ProposicoesURL = `${this.endpoint}/${idDaProposicao.toString(10)}/temas`;
         const temas = await obter<TemaDaProposicao[], ProposicoesURL>(url);
@@ -127,7 +128,7 @@ export class Proposicoes {
      * Esta representação das tramitações ainda é provisória.
      */
     async obterTramitacoes(idDaProposicao: number, opcoes?: ProposicaoTramitacaoOpcoes): Promise<TramitacaoDaProposicao[]> {
-        idDaProposicao = verificarID(idDaProposicao);
+        idDaProposicao = verificarInteiro(idDaProposicao);
 
         const urlBase: ProposicoesURL = `${this.endpoint}/${idDaProposicao.toString(10)}/tramitacoes`;
         const url = this.#construirURL(urlBase, opcoes);
@@ -142,8 +143,16 @@ export class Proposicoes {
         return [];
     };
 
+    /**
+     * Retorna uma lista de dados básicos sobre as votações na Câmara que
+     * tiveram a proposição como objeto ou como afetada pelos seus resultados.
+     * Dados complementares sobre cada votação listada podem ser obtidos através do método `Votacoes.prototype.obterUma()`.
+     * 
+     * Para compreender melhor os dados sobre votações, veja a página de tutorial do Portal de Dados Abertos:
+     * https://dadosabertos.camara.leg.br/howtouse/2020-02-07-dados-votacoes.html
+     */
     async obterVotacoes(idDaProposicao: number, opcoes?: ProposicaoVotacaoOpcoes): Promise<VotacaoDaProposicao[]> {
-        idDaProposicao = verificarID(idDaProposicao);
+        idDaProposicao = verificarInteiro(idDaProposicao);
 
         const urlBase: ProposicoesURL = `${this.endpoint}/${idDaProposicao.toString(10)}/votacoes`;
         const url = this.#construirURL(urlBase, opcoes);
@@ -158,7 +167,7 @@ export class Proposicoes {
         return [];
     };
 
-    /** Constrói a URL com base nos parâmetros fornecidos. */
+    /** Constrói a URL com base nas opções fornecidas. */
     #construirURL<T extends EndpointOpcoes<ProposicoesOrdenarPor>>(url: ProposicoesURL, opcoes?: T): ProposicoesURL {
         if (!opcoes) return url;
 
@@ -186,19 +195,20 @@ export class Proposicoes {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
                 for (const numero of value) {
-                    const id = verificarID(numero);
+                    const id = verificarInteiro(numero);
                     url += `&${key}=${id.toString(10)}`;
                 };
 
-            } else if (dateKeys.includes(key) && verificarData(value)) {
-                url += `&${key}=${value}`;
+            } else if (dateKeys.includes(key)) {
+                const data = verificarData(value);
+                url += `&${key}=${data}`;
 
             } else if (stringKeys.includes(key)) {
                 if (typeof value !== 'string') throw new APIError(`${key} deveria ser uma string, mas é um(a) ${typeof value}`);
                 url += `&${key}=${value}`;
 
             } else if (numberKeys.includes(key)) {
-                const id = verificarID(value);
+                const id = verificarInteiro(value);
                 url += `&${key}=${id.toString(10)}`;
 
             } else if (key === 'tramitacaoSenado') {

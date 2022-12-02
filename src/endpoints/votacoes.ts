@@ -1,4 +1,4 @@
-import { obter, verificarData, verificarID } from "../common/helpers.js";
+import { obter, verificarData, verificarInteiro } from "../common/helpers.js";
 import { APIError } from "../error.js";
 
 import type {
@@ -17,16 +17,16 @@ import type {
 
 
 export class Votacoes {
-    /** URL para o endpoint dos deputados. */
+    /** URL para o endpoint das votações. */
     readonly endpoint: VotacoesURL = 'https://dadosabertos.camara.leg.br/api/v2/votacoes';
 
     /**
      * Retorna uma lista de informações básicas sobre as votações ocorridas em eventos dos diversos órgãos da Câmara.
      * 
-     * Se não forem passados parâmetros que delimitem o intervalo de tempo da pesquisa,
+     * Se não forem passadas opções que delimitem o intervalo de tempo da pesquisa,
      * são retornados dados sobre todas as votações ocorridas nos últimos 30 dias, em eventos de todos os órgãos.
      * 
-     * Os parâmetros de data permitem estender o período, mas por enquanto é necessário que as duas datas sejam de um mesmo ano.
+     * As opções de data permitem estender o período, mas por enquanto é necessário que as duas datas sejam de um mesmo ano.
      * Quando apenas uma delas está presente, são retornadas somente as votações ocorridas no mesmo ano, antes de `dataFim` ou após `dataInicio`.
      * 
      * Também é possível filtrar a listagem por ID de órgãos da Câmara, de proposições e de eventos.
@@ -126,7 +126,7 @@ export class Votacoes {
         return [];
     };
 
-    /** Constrói a URL com base nos parâmetros fornecidos. */
+    /** Constrói a URL com base nas opções fornecidas. */
     #construirURL<T extends EndpointOpcoes<VotacoesOrdenarPor>>(url: VotacoesURL, opcoes?: T): VotacoesURL {
         if (!opcoes) return url;
 
@@ -141,12 +141,13 @@ export class Votacoes {
                 if (!Array.isArray(value)) throw new APIError(`${key} deveria ser uma array, mas é um(a) ${typeof value}`);
 
                 for (const numero of value) {
-                    const id = verificarID(numero);
+                    const id = verificarInteiro(numero);
                     url += `&${key}=${id.toString(10)}`;
                 };
 
-            } else if ((key === 'dataInicio' || key === 'dataFim') && verificarData(value)) {
-                url += `&${key}=${value}`;
+            } else if (key === 'dataInicio' || key === 'dataFim') {
+                const data = verificarData(value);
+                url += `&${key}=${data}`;
 
             } else if (stringKeys.includes(key)) {
                 if (typeof value !== 'string') throw new APIError(`${key} deveria ser uma string, mas é um(a) ${typeof value}`);

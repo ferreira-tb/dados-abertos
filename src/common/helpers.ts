@@ -14,9 +14,12 @@ export async function obter<T extends TodosDados | TodosDados[], L extends Camar
 
 /**
  * Verifica se a data obedece ao formato `AAAA-MM-DD`.
- * @param data Data a ser verificada.
+ * Caso um objeto `Date` seja fornecido, ele será convertido para o formato correto automaticamente.
+ * @param data Item a ser verificado.
  */
-export function verificarData(data: unknown): data is string {
+export function verificarData(data: unknown): string {
+    if (data instanceof Date) data = converterData(data);
+
     if (typeof data !== 'string' || !(/^\d\d\d\d\-\d\d\-\d\d$/.test(data))) {
         throw new APIError(`${data} não é uma data válida.`);
     };
@@ -30,10 +33,12 @@ export function verificarData(data: unknown): data is string {
         };
     });
 
-    return true;
+    return data;
 };
 
-export function verificarHora(hora: unknown): hora is string {
+export function verificarHora(hora: unknown): string {
+    if (hora instanceof Date) hora = converterHora(hora);
+
     if (typeof hora !== 'string' || !(/^\d\d\:\d\d$/.test(hora))) {
         throw new APIError(`${hora} não é uma hora válida.`);
     };
@@ -47,7 +52,24 @@ export function verificarHora(hora: unknown): hora is string {
         };
     });
 
-    return true;
+    return hora;
+};
+
+function converterData(data: Date): string {
+    if (!(data instanceof Date)) throw new APIError('O objeto Date é inválido.');
+
+    const dia = data.getDate().toString(10).padStart(2, '0');
+    const mes = (data.getMonth() + 1).toString(10).padStart(2, '0');
+    const ano = data.getFullYear().toString(10);
+    return `${ano}\-${mes}\-${dia}`;
+};
+
+function converterHora(horario: Date): string {
+    if (!(horario instanceof Date)) throw new APIError('O objeto Date é inválido.');
+
+    const hora = horario.getHours().toString(10).padStart(2, '0');
+    const minuto = horario.getMinutes().toString(10).padStart(2, '0');
+    return `${hora}\:${minuto}`;
 };
 
 /**
@@ -55,7 +77,7 @@ export function verificarHora(hora: unknown): hora is string {
  * Se não for inteiro, emite um erro, mas, caso seja negativo, retorna seu valor absoluto.
  * @param id ID a ser verificado.
  */
-export function verificarID(id: unknown): number {
+export function verificarInteiro(id: unknown): number {
     if (typeof id !== 'number' || !Number.isInteger(id)) {
         throw new APIError(`${id} não é um ID válido.`);
     };
