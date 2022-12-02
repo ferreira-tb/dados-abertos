@@ -9,7 +9,7 @@ O objetivo dessa biblioteca é servir como uma ponte entre o serviço Dados Aber
 $ npm i dados-abertos
 ```
 
-**Observação:** Essa ferramenta depende da função global [fetch](https://nodejs.org/dist/latest-v16.x/docs/api/globals.html#fetch) do Node.js.
+**Observação:** Essa ferramenta depende da função global [fetch](https://nodejs.org/dist/latest-v19.x/docs/api/globals.html#fetch) do Node.js.
 Portanto, recomenda-se usar a versão 19.1.0 ou mais recente.
 
 ## Como usar
