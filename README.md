@@ -1,4 +1,4 @@
-# Dados Abertos — Node.js
+# Dados Abertos — Câmara dos Deputados
 Interface simples e tipada para a REST API Dados Abertos da Câmara dos Deputados do Brasil.
 
 **ATENÇÃO**: O projeto está em fase inicial de desenvolvimento e seu uso **não** é recomendado.
