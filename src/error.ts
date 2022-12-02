@@ -18,6 +18,7 @@ export class APIError extends Error {
         switch (status) {
             case 400: throw new APIError('400: Requisição inválida.', status);
             case 404: throw new APIError('404: A URL passada se refere a um recurso que não existe no sistema.', status);
+            case 429: throw new APIError('429: Você está fazendo solicitações demais ao servidor.', status);
             case 500: throw new APIError('500: Erro interno no servidor da Câmara dos Deputados.', status);
         };
     };

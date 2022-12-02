@@ -1,5 +1,5 @@
 ////// GLOBAL
-export type UnidadeFederativa =
+type UnidadeFederativa =
     | 'AC' // Acre
     | 'AL' // Alagoas
     | 'AP' // Amapá
@@ -42,7 +42,7 @@ export type NavegacaoEntrePaginas<L> = {
     readonly href: L
 }
 
-export type Bancada = {
+type Bancada = {
     readonly tipo: string
     readonly nome: string
     readonly uri: PartidosURL | null
@@ -62,31 +62,41 @@ export type TodosDados =
 
 ////// ORDENAR POR
 /** ID, nome e legislatura. */
-export type OrdenarBlocos = 'id' | 'nome' | 'idLegislatura';
+type OrdenarBlocos = 'id' | 'nome' | 'idLegislatura';
 /** ID, nome, legislatura, sigla da unidade federativa e sigla do partido. */
-export type OrdenarDeputados = 'id' | 'nome' | 'idLegislatura' | 'siglaUf' | 'siglaPartido';
+type OrdenarDeputados = 'id' | 'nome' | 'idLegislatura' | 'siglaUf' | 'siglaPartido';
 /** Legislatura ou qualquer chave do objeto. */
-export type OrdenarDeputadosDespesas = keyof DespesasDoDeputado | 'idLegislatura';
+type OrdenarDeputadosDespesas = keyof DespesasDoDeputado | 'idLegislatura';
 /** Data e hora iniciais. */
-export type OrdenarDeputadosDiscursos = 'dataHoraInicio';
+type OrdenarDeputadosDiscursos = 'dataHoraInicio';
 /** ID, data e hora iniciais e a sigla do órgão. */
-export type OrdenarDeputadosEventos = 'id' | 'dataHoraInicio' | 'siglaOrgao';
+type OrdenarDeputadosEventos = 'id' | 'dataHoraInicio' | 'siglaOrgao';
 /** ID, sigla e nome do orgão, além do título e as datas de início e fim. */
-export type OrdenarDeputadosOrgaos = 'dataInicio' | 'dataFim' | 'idOrgao' | 'siglaOrgao' | 'nomeOrgao' | 'titulo';
+type OrdenarDeputadosOrgaos = 'dataInicio' | 'dataFim' | 'idOrgao' | 'siglaOrgao' | 'nomeOrgao' | 'titulo';
 /** ID, data e hora, descrição e título. */
-export type OrdenarEventos = 'id' | 'dataHoraInicio' | 'dataHoraFim' | 'descricaoSituacao' | 'descricaoTipo' | 'titulo';
+type OrdenarEventos = 'id' | 'dataHoraInicio' | 'dataHoraFim' | 'descricaoSituacao' | 'descricaoTipo' | 'titulo';
 /** Não há ordenação para as frentes parlamentares. */
-export type OrdenarFrentes = never;
+type OrdenarFrentes = never;
 /** ID da legislatura. */
-export type OrdenarLegislaturas = 'id';
+type OrdenarLegislaturas = 'id';
 /** ID, nome, sigla, data inicial e data final. */
-export type OrdenarPartidos = 'id' | 'nome' | 'dataInicio' | 'dataFim' | 'sigla';
+type OrdenarPartidos = 'id' | 'nome' | 'dataInicio' | 'dataFim' | 'sigla';
 /** ID, nome e sigla da unidade federativa. */
-export type OrdenarPartidosMembros = 'id' | 'nome' | 'siglaUf';
+type OrdenarPartidosMembros = 'id' | 'nome' | 'siglaUf';
 /** ID, código e sdo tipo da proposição, */
-export type OrdenarProposicoes = 'id' | 'codTipo' | 'siglaTipo' | 'numero' | 'ano';
+type OrdenarProposicoes = 'id' | 'codTipo' | 'siglaTipo' | 'numero' | 'ano';
 /** ID e horário do registro. */
-export type OrdenarProposicoesVotacao = 'id' | 'dataHoraRegistro';
+type OrdenarProposicoesVotacao = 'id' | 'dataHoraRegistro';
+/** */
+type OrdenarVotacoes =
+    | 'id'
+    | 'idOrgao'
+    | 'siglaOrgao'
+    | 'idEvento'
+    | 'idProposicao'
+    | 'data'
+    | 'dataHoraRegistro '
+    | 'idProposicaoObjeto';
 
 // União dos tipos usados por diferentes partes de um mesmo endpoint.
 // Os tipos resultantes então são usados como constraint em alguns métodos.
@@ -105,7 +115,7 @@ export type OrgaosOrdenarPor = '';
 export type PartidosOrdenarPor = OrdenarPartidos | OrdenarPartidosMembros;
 export type ProposicoesOrdenarPor = OrdenarProposicoes | OrdenarProposicoesVotacao;
 export type ReferenciasOrdenarPor = '';
-export type VotacoesOrdenarPor = '';
+export type VotacoesOrdenarPor = OrdenarVotacoes;
 
 ////// ENDPOINTS
 export type CamaraEndpoints =
@@ -120,7 +130,7 @@ export type CamaraEndpoints =
     | ReferenciasURL
     | VotacoesURL
 
-export type NomesDosEndpoints =
+type NomesDosEndpoints =
     | 'blocos'
     | 'deputados'
     | 'eventos'
@@ -132,9 +142,9 @@ export type NomesDosEndpoints =
     | 'referencias'
     | 'votacoes'
 
-export type VersaoAPI = 'v2';
-export type EndpointURLBase = `https://dadosabertos.camara.leg.br/api/${VersaoAPI}`;
-export type TodosEndpointsURL = `${EndpointURLBase}/${NomesDosEndpoints}`;
+type VersaoAPI = 'v2';
+type EndpointURLBase = `https://dadosabertos.camara.leg.br/api/${VersaoAPI}`;
+type TodosEndpointsURL = `${EndpointURLBase}/${NomesDosEndpoints}`;
 
 export type BlocosURL = `${EndpointURLBase}/blocos${string}`;
 export type DeputadosURL = `${EndpointURLBase}/deputados${string}`;
@@ -174,7 +184,7 @@ export type OrgaosTodasOpcoes = never;
 export type PartidosTodasOpcoes = keyof PartidoOpcoes;
 export type ProposicoesTodasOpcoes = keyof ProposicaoOpcoes | keyof ProposicaoTramitacaoOpcoes;
 export type ReferenciasTodasOpcoes = never;
-export type VotacoesTodasOpcoes = never;
+export type VotacoesTodasOpcoes = keyof VotacaoOpcoes;
 
 ////// BLOCOS
 export type DadosDosBlocos =
@@ -278,7 +288,7 @@ export type Deputado = {
     readonly urlWebsite: string | null
 }
 
-export interface StatusDoDeputado extends DadosBasicosDeputado {
+interface StatusDoDeputado extends DadosBasicosDeputado {
     readonly condicaoEleitoral: string
     readonly data: string
     /** Quando não existente, pode aparecer como uma string vazia ou como `null`. */
@@ -288,7 +298,7 @@ export interface StatusDoDeputado extends DadosBasicosDeputado {
     readonly situacao: string
 }
 
-export type GabineteDoDeputado = {
+type GabineteDoDeputado = {
     readonly andar: string
     readonly email: string
     readonly nome: string
@@ -450,12 +460,12 @@ export type PautaDoEvento = {
     readonly situacaoItem: string | null
 }
 
-export type Requerimento = {
+type Requerimento = {
     readonly titulo: string;
     readonly uri: ProposicoesURL
 }
 
-export type LocalCamara = {
+type LocalCamara = {
     readonly andar: string | null
     readonly nome: string | null
     readonly predio: string | null
@@ -464,7 +474,7 @@ export type LocalCamara = {
 
 // Tipos que dependem desse:
 // DiscursosDoDeputado
-export type FaseEvento = {
+type FaseEvento = {
     readonly dataHoraFim: string | null
     readonly dataHoraInicio: string | null
     readonly titulo: string
@@ -626,7 +636,7 @@ export interface Partido extends DadosBasicosPartido {
     readonly urlFacebook: string | null
 }
 
-export type StatusDoPartido = {
+type StatusDoPartido = {
     readonly data: string
     readonly idLegislatura: string
     readonly situacao: 'Ativo' | 'Inativo'
@@ -637,7 +647,7 @@ export type StatusDoPartido = {
 }
 
 /** Dados básicos sobre o líder do partido. */
-export type LiderDoPartido = {
+type LiderDoPartido = {
     readonly uri: DeputadosURL
     readonly nome: string
     readonly siglaPartido: string
@@ -666,6 +676,8 @@ export type DadosDasProposicoes =
     | TramitacaoDaProposicao
     | VotacaoDaProposicao
 
+// Interfaces que dependem dessa:
+// Votacao
 export type DadosBasicosProposicao = {
     readonly id: number
     readonly uri: ProposicoesURL
@@ -753,7 +765,7 @@ export type ProposicaoTramitacaoOpcoes = Pick<EndpointOpcoes<never>, 'dataInicio
 export type ProposicaoVotacaoOpcoes = Pick<EndpointOpcoes<OrdenarProposicoesVotacao>, 'ordem' | 'ordenarPor'>;
 
 // Quando a representação das tramitações adotada pela API mudar, é aconselhável revisar completamente esse tipo.
-export type StatusDaProposicao = {
+type StatusDaProposicao = {
     readonly dataHora: string
     readonly sequencia: number
     readonly siglaOrgao: string
@@ -790,6 +802,9 @@ export type VotacaoDaProposicao = DadosBasicosVotacao;
 ////// VOTAÇÕES
 export type DadosDasVotacoes =
     | DadosBasicosVotacao
+    | Votacao
+    | OrientacoesDaVotacao
+    | Votos
 
 /** Usado diretamente nos métodos `Eventos.prototype.obterVotacoes()` e `Proposicoes.prototype.obterVotacoes()`. */
 export type DadosBasicosVotacao = {
@@ -799,9 +814,72 @@ export type DadosBasicosVotacao = {
     readonly dataHoraRegistro: string
     readonly siglaOrgao: string
     readonly uriOrgao: OrgaosURL
-    readonly uriEvento: EventosURL
+    readonly uriEvento: EventosURL | null
     readonly proposicaoObjeto: string | null
     readonly uriProposicaoObjeto: ProposicoesURL | null
     readonly descricao: string
     readonly aprovacao: number
+}
+
+export interface VotacaoOpcoes extends Omit<EndpointOpcoes<OrdenarVotacoes>, 'idLegislatura'> {
+    /** ID alfanumérico da votação. */
+    id?: string[]
+    /** 
+     * ID de uma ou mais proposições. Se presente, listará as votações que tiveram
+     * as proposições como objeto de votação ou que afetaram as proposições listadas.
+     */
+    idProposicao?: number[]
+    /**
+     * ID de um ou mais eventos realizados na Câmara, nos quais tenham sido realizadas as votações a serem listadas.
+     * 
+     * Somente os eventos deliberativos podem ter votações. Os eventos podem ter ocorrido
+     * fora do intervalo de tempo padrão ou definido por `dataInicio` e/ou `dataFim`.
+     */
+    idEvento?: number[]
+    /** ID de um ou mais órgãos. Se presente, serão retornadas somente votações dos órgãos enumerados. */
+    idOrgao?: number[]
+}
+
+export interface Votacao extends DadosBasicosVotacao {
+    readonly idOrgao: number
+    readonly idEvento: number | null
+    readonly descUltimaAberturaVotacao: string | null
+    readonly dataHoraUltimaAberturaVotacao: string | null
+    readonly ultimaApresentacaoProposicao: ApresentacaoProposicao
+    readonly efeitosRegistrados: EfeitoRegistrado[]
+    readonly objetosPossiveis: DadosBasicosProposicao[]
+    readonly proposicoesAfetadas: DadosBasicosProposicao[]
+}
+
+type ApresentacaoProposicao = {
+    readonly dataHoraRegistro: string | null
+    readonly descricao: string | null
+    readonly uriProposicaoCitada: ProposicoesURL | null
+}
+
+type EfeitoRegistrado = {
+    readonly uriProposicao: ProposicoesURL
+    readonly tituloProposicao: string
+    readonly descResultado: string
+    readonly dataHoraResultado: string
+    readonly descUltimaAberturaVotacao: string | null
+    readonly dataHoraUltimaAberturaVotacao: string | null
+    readonly descUltimaApresentacaoProposicao: string | null
+    readonly dataHoraUltimaApresentacaoProposicao: string | null
+    readonly uriProposicaoCitada: ProposicoesURL | null
+    readonly tituloProposicaoCitada: string | null
+}
+
+export type OrientacoesDaVotacao = {
+    readonly orientacaoVoto: string
+    readonly codTipoLideranca: string
+    readonly siglaPartidoBloco: string
+    readonly codPartidoBloco: number | null
+    readonly uriPartidoBloco: PartidosURL | null
+}
+
+export type Votos = {
+    readonly dataRegistroVoto: string
+    readonly tipoVoto: string
+    readonly deputado_: DadosBasicosDeputado
 }
