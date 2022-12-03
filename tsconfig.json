@@ -34,5 +34,5 @@
         "removeComments": false
     },
 
-    "include": ["src/**/*", "index.d.ts"]
+    "include": ["src/**/*"]
 }

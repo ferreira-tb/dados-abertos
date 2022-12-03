@@ -14,7 +14,7 @@ import type {
     PartidosTodasOpcoes,
     DadosDosPartidos,
     LinksNavegacao
-} from "../../index.js";
+} from "../main.js";
 
 export class Partidos {
     /** URL para o endpoint dos partidos. */

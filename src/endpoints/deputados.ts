@@ -22,7 +22,7 @@ import type {
     DeputadosTodasOpcoes,
     DadosDosDeputados,
     LinksNavegacao
-} from "../../index.js";
+} from "../main.js";
 
 export class Deputados {
     /** URL para o endpoint dos deputados. */

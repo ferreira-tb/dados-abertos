@@ -14,7 +14,7 @@ import type {
     LegislaturasTodasOpcoes,
     DadosDasLegislaturas,
     LinksNavegacao
-} from "../../index.js";
+} from "../main.js";
 
 export class Legislaturas {
     /** URL para o endpoint das legislaturas. */

@@ -8,7 +8,7 @@ import type {
     BlocosTodasOpcoes,
     DadosDosBlocos,
     LinksNavegacao
-} from "../../index.js";
+} from "../main.js";
 
 export class BlocosPartidarios {
     /** URL para o endpoint dos blocos partidários. */

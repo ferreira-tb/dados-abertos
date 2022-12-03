@@ -15,7 +15,7 @@ import type {
     EventosTodasOpcoes,
     DadosDosEventos,
     LinksNavegacao
-} from "../../index.js";
+} from "../main.js";
 
 export class Eventos {
     /** URL para o endpoint dos eventos. */

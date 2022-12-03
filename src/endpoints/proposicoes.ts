@@ -18,7 +18,7 @@ import type {
     ProposicoesTodasOpcoes,
     DadosDasProposicoes,
     LinksNavegacao
-} from "../../index.js";
+} from "../main.js";
 
 export class Proposicoes {
     /** URL para o endpoint das proposições. */

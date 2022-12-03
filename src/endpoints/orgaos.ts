@@ -17,7 +17,7 @@ import type {
     OrgaosTodasOpcoes,
     OrgaosURL,
     OrgaoVotacaoOpcoes
-} from "../../index.js";
+} from "../main.js";
 
 export class Orgaos {
     /** URL para o endpoint das votações. */

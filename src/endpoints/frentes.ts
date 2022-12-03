@@ -10,7 +10,7 @@ import type {
     FrentesTodasOpcoes,
     LinksNavegacao,
     NavegacaoEntrePaginas
-} from "../../index.js";
+} from "../main.js";
 
 export class FrentesParlamentares {
     /** URL para o endpoint das frentes parlamentares. */

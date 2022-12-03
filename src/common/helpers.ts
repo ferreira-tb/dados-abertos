@@ -4,7 +4,7 @@ import type {
     TodosDados,
     CamaraEndpoints,
     ResultadoBusca
-} from "../../index.js";
+} from "../main.js";
 
 export async function obter<T extends TodosDados | TodosDados[], L extends CamaraEndpoints>(url: L): Promise<ResultadoBusca<T, L>> {
     const dados = await fetch(url);

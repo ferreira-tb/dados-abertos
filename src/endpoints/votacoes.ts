@@ -13,7 +13,7 @@ import type {
     VotacoesTodasOpcoes,
     VotacoesURL,
     Votos
-} from "../../index.js";
+} from "../main.js";
 
 
 export class Votacoes {
