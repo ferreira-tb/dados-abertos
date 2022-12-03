@@ -26,9 +26,9 @@ export class Partidos {
      * Se não forem passadas opções, retorna os partidos que têm deputados em exercício no momento da requisição.
      * 
      * É possível obter uma lista de partidos representados na Câmara em um certo intervalo de datas ou de legislaturas.
-     * Se um intervalo de uma ou mais legislatura(s) não coincidentes forem passados, todos os intervalos de tempo serão somados.
+     * Se um intervalo de uma ou mais legislaturas não coincidentes forem passados, todos os intervalos de tempo serão somados.
      * 
-     * Também se pode fazer busca por uma ou mais sigla(s), mas, em diferentes legislaturas, pode haver mais de um partido usando a mesma sigla.
+     * Também se pode fazer busca por uma ou mais siglas, mas, em diferentes legislaturas, pode haver mais de um partido usando a mesma sigla.
      */
     public static async obterTodos(opcoes?: PartidoOpcoes): Promise<DadosBasicosPartido[]> {
         const url = this.#construirURL(`${this.#endpoint}?itens=100`, opcoes);

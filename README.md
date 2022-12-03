@@ -30,7 +30,7 @@ const aquelaVotacao = await Votacoes.obterUma('1234567-89');
 // Como cada deputado votou.
 const votos = await Votacoes.obterVotos('1234567-89');
 
-// E muito mais!
+// E mais!
 ```
 
 ## Documentação

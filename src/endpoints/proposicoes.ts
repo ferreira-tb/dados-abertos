@@ -146,7 +146,7 @@ export class Proposicoes {
     /**
      * Retorna uma lista de dados básicos sobre as votações na Câmara que
      * tiveram a proposição como objeto ou como afetada pelos seus resultados.
-     * Dados complementares sobre cada votação listada podem ser obtidos através do método `Votacoes.prototype.obterUma()`.
+     * Dados complementares sobre cada votação listada podem ser obtidos através do método `Votacoes.obterUma()`.
      * 
      * Para compreender melhor os dados sobre votações, veja a página de tutorial do Portal de Dados Abertos:
      * https://dadosabertos.camara.leg.br/howtouse/2020-02-07-dados-votacoes.html

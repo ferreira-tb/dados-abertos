@@ -100,7 +100,7 @@ export class Orgaos {
      * Caso seja um órgão temporário, como uma comissão especial, são listadas por padrão
      * todas as votações ocorridas no órgão, em qualquer período de tempo.
      * 
-     * Dados complementares sobre cada votação listada podem ser obtidos através do método `Votacoes.prototype.obterUma()`.
+     * Dados complementares sobre cada votação listada podem ser obtidos através do método `Votacoes.obterUma()`.
      * 
      * Para compreender melhor os dados sobre votações, veja a página de tutorial do Portal de Dados Abertos:
      * https://dadosabertos.camara.leg.br/howtouse/2020-02-07-dados-votacoes.html

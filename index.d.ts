@@ -439,11 +439,11 @@ export interface Evento extends DadosBasicosEvento {
 export interface EventoOpcoes extends Omit<EndpointOpcoes<OrdenarEventos>, 'idLegislatura'> {
     /** ID de um ou mais eventos. */
     id?: number[]
-    /** ID dos tipos de evento que se deseja obter. */
+    /** ID dos tipos de evento. */
     codTipoEvento?: number[]
     /** ID de tipos de situação de evento. */
     codSituacao?: number[]
-    /** ID de tipos de órgãos realizadores dos eventos que se deseja obter. */
+    /** ID dos tipos de órgãos realizadores dos eventos. */
     codTipoOrgao?: number[]
     /** ID dos órgãos. */
     idOrgao?: number[]
@@ -794,7 +794,7 @@ export interface ProposicaoOpcoes extends Omit<EndpointOpcoes<OrdenarProposicoes
     id?: number[]
     /** Sigla dos tipos das proposições. */
     siglaTipo?: string[]
-    /** Números oficialmente atribuídos às proposições segundo o art. 137 do Regimento Interno, como o 1234 em “PL 1234/2016”. */
+    /** Números oficialmente atribuídos às proposições segundo o art. 137 do Regimento Interno. */
     numero?: number[]
     /** Anos de apresentação das proposições, no formato `AAAA`. */
     ano?: number[]
@@ -886,9 +886,9 @@ export type DadosDasVotacoes =
 
 /**
  * Usado diretamente nos métodos:
- * `Eventos.prototype.obterVotacoes()`,
- * `Proposicoes.prototype.obterVotacoes()` e
- * `Orgaos.prototype.obterVotacoes()`.
+ * `Eventos.obterVotacoes()`,
+ * `Proposicoes.obterVotacoes()` e
+ * `Orgaos.obterVotacoes()`.
  */
 export type DadosBasicosVotacao = {
     readonly id: string

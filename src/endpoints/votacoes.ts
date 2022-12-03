@@ -32,10 +32,10 @@ export class Votacoes {
      * Também é possível filtrar a listagem por ID de órgãos da Câmara, de proposições e de eventos.
      * 
      * Quando não há identificação da proposição que foi efetivamente votada,
-     * é preciso usar o método `Votacoes.prototype.obterUma()` para obter
+     * é preciso usar o método `Votacoes.obterUma()` para obter
      * uma lista de proposições das quais uma pode ter sido o objeto da votação.
      * 
-     * Para mais informações, veja a página de tutorial do Portal de Dados Aberto:
+     * Para mais informações, veja a página de tutorial do Portal de Dados Abertos:
      * https://dadosabertos.camara.leg.br/howtouse/2020-02-07-dados-votacoes.html
      */
     public static async obterTodas(opcoes?: VotacaoOpcoes): Promise<DadosBasicosVotacao[]> {

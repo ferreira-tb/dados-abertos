@@ -111,7 +111,7 @@ export class Eventos {
      * Retorna uma lista de dados básicos sobre votações que tenham sido realizadas no evento.
      * Votações só ocorrem em eventos de caráter deliberativo.
      * 
-     * Dados complementares sobre cada votação listada podem ser obtidos através do método `Votacoes.prototype.obterUm()`.
+     * Dados complementares sobre cada votação listada podem ser obtidos através do método `Votacoes.obterUm()`.
      * 
      * Para compreender melhor os dados sobre votações, veja a página de tutorial do Portal de Dados Abertos.
      * https://dadosabertos.camara.leg.br/howtouse/2020-02-07-dados-votacoes.html
