@@ -35,14 +35,14 @@ const votos = await Votacoes.obterVotos('1234567-89');
 
 ## Documentação
 
-Para entender como utilizar cada um, consulte a [wiki](https://github.com/ferreira-tb/node-dados-abertos/wiki) do repositório.
+Para entender como utilizar cada um, consulte a [wiki](https://github.com/ferreira-tb/dados-abertos/wiki) do repositório.
 
-- [`BlocosPartidarios`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Blocos-Partid%C3%A1rios)
-- [`Deputados`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Deputados)
-- [`Eventos`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Eventos)
-- [`FrentesParlamentares`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Frentes-Parlamentares)
-- [`Legislaturas`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Legislaturas)
-- [`Orgaos`](https://github.com/ferreira-tb/node-dados-abertos/wiki/%C3%93rg%C3%A3os)
-- [`Partidos`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Partidos)
-- [`Proposicoes`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Proposi%C3%A7%C3%B5es)
-- [`Votacoes`](https://github.com/ferreira-tb/node-dados-abertos/wiki/Vota%C3%A7%C3%B5es)
+- [`BlocosPartidarios`](https://github.com/ferreira-tb/dados-abertos/wiki/Blocos-Partid%C3%A1rios)
+- [`Deputados`](https://github.com/ferreira-tb/dados-abertos/wiki/Deputados)
+- [`Eventos`](https://github.com/ferreira-tb/dados-abertos/wiki/Eventos)
+- [`FrentesParlamentares`](https://github.com/ferreira-tb/dados-abertos/wiki/Frentes-Parlamentares)
+- [`Legislaturas`](https://github.com/ferreira-tb/dados-abertos/wiki/Legislaturas)
+- [`Orgaos`](https://github.com/ferreira-tb/dados-abertos/wiki/%C3%93rg%C3%A3os)
+- [`Partidos`](https://github.com/ferreira-tb/dados-abertos/wiki/Partidos)
+- [`Proposicoes`](https://github.com/ferreira-tb/dados-abertos/wiki/Proposi%C3%A7%C3%B5es)
+- [`Votacoes`](https://github.com/ferreira-tb/dados-abertos/wiki/Vota%C3%A7%C3%B5es)
